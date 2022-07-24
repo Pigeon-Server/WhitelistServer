@@ -1,0 +1,16 @@
+{
+  "port": 443,
+  "maxage": 1200000,
+  "cookiekey": "ABCDEFG",
+  "database": {
+      "host": "127.0.0.1",
+      "username": "root",
+      "password": "root",
+      "name": "whitelist",
+      "port": 3306
+  },
+  "LogSize": "10M",
+  "BackUpNumber": 10,
+  "EnableCompress": true,
+  "passScore": 70
+}

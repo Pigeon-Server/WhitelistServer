@@ -1,0 +1,12 @@
+{
+  "name": "whitelistserver",
+  "version": "1.0.0",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "log4js": "^6.6.0",
+    "mysql2": "^2.3.3",
+    "string-random": "^0.1.3"
+  }
+}
