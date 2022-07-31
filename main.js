@@ -6,14 +6,14 @@ const cookieParser = require('cookie-parser'); //cookie
 const session = require('express-session'); //session
 const express = require('express'); //express
 //自写模块
-const config = require(path.join(__dirname,'config.json')); //配置读取
-const {GetQuestion,JudgeAnswer} = require(path.join(__dirname,'question.js')); //获取问题以及判断正误
-const GetLength = require(path.join(__dirname,'getlength.js')); //获取长度
-const {CheckName,addUser} = require(path.join(__dirname,'mysql.js')); //数据库相关
-const {CheckLimit,Reset} = require(path.join(__dirname,'limit.js')); //api访问限制
-const {logger,submit,GetApi,PostApi,Error,Function} = require(path.join(__dirname,'logger.js')); //日志模块
-const {StrToBool} = require(path.join(__dirname,'transform.js')); //转换验证
-const {CheckInfo} = require(path.join(__dirname,'Check.js')); //转换验证
+const config = require(path.join(__dirname,'nodejs/config.json')); //配置读取
+const {GetQuestion,JudgeAnswer} = require(path.join(__dirname,'nodejs/question.js')); //获取问题以及判断正误
+const GetLength = require(path.join(__dirname,'nodejs/getlength.js')); //获取长度
+const {CheckName,addUser} = require(path.join(__dirname,'nodejs/mysql.js')); //数据库相关
+const {CheckLimit,Reset} = require(path.join(__dirname,'nodejs/limit.js')); //api访问限制
+const {logger,submit,GetApi,PostApi,Error,Function} = require(path.join(__dirname,'nodejs/logger.js')); //日志模块
+const {StrToBool} = require(path.join(__dirname,'nodejs/transform.js')); //转换验证
+const {CheckInfo} = require(path.join(__dirname,'nodejs/Check.js')); //转换验证
 //定时任务
 let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
 //初始化express
