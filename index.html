@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="shortcut icon" href="Web-Logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pigeon Server 白名单验证</title>
+    <!-- 基础库导入 -->
+    <script src="./resource/lib/bootstrap/bootstrap.js"></script>
+    <script src="./resource/lib/axios/axios.min.js"></script>
+    <script src="./resource/lib/loading-animation/loading-animation.js"></script>
+    <link rel="stylesheet" href="./resource/lib/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" href="./resource/lib/loading-animation/loading-animation.css">
+    <!-- 自定义 -->
+    <script src="./resource/javascript/main.js"></script>
+    <script src="./resource/javascript/index.js"></script>
+    <link rel="stylesheet" href="./resource/styles/main.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg Main-background-color">
+        <div class="Page-container">
+          <div class="container-fluid">
+            <a class="navbar-brand title" href="#">Pigeon Server</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main>
+<!--      主体-->
+      <div class="Page-container">
+        <!-- 单块 -->
+        <div class="main-box">
+          <!-- 块标题 -->
+          <div class="box-header">
+            <h2>白名单申请-基础信息填写</h2>
+          </div>
+          <!-- 块容器 -->
+          <div class="box-content">
+            <div class="alert alert-danger" id="form-alert" style="display: none" role="alert">
+              请检查游戏名与QQ号/KOOK用户名，可能与他人重复了
+            </div>
+            <form method="post" action="./api/registration" class="row g-3 needs-validation" novalidate>
+              <div class="col-md-4">
+                <label for="Game_name" class="form-label">游戏名</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Game_name"
+                  name="username"
+                  minlength="4"
+                  maxlength="16"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="Username" class="form-label">QQ号/KOOK用户名</label>
+                <div class="input-group has-validation">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="Username"
+                    name="account"
+                    minlength="5"
+                    maxlength="12"
+                    required
+                  />
+                  <select
+                    class="form-control"
+                    id="Username_mode"
+                    name="User_Mode"
+                    required
+                  >
+                    <option disabled selected value="">请选择</option>
+                    <option value="QQ">QQ</option>
+                    <option value="KOOK">KOOK（开黑啦）</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <label for="Age" class="form-label">年龄</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="Age"
+                  name="Age"
+                  min="16"
+                  max="60"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
+                <label for="playtime" class="form-label"
+                  >Minecraft游玩时间</label
+                >
+                <select
+                  class="form-select"
+                  id="playtime"
+                  name="playtime"
+                  required
+                >
+                  <option disabled selected value="">请选择</option>
+                  <option value="1">新入坑（1年以内）</option>
+                  <option value="2-3">2~3年</option>
+                  <option value="5+">5年以上</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="online_mode" class="form-label"
+                  >是否拥有Minecraft正版账号</label
+                >
+                <select
+                  class="form-select"
+                  id="online_mode"
+                  name="online_mode"
+                  required
+                >
+                  <option disabled selected value="">请选择</option>
+                  <option value="True">我拥有Minecraft正版账号</option>
+                  <option value="False">我没有Minecraft正版账号</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="Game_version" class="form-label"
+                  >主要游玩的版本（不可更改）</label
+                >
+                <select
+                  class="form-select"
+                  id="Game_version"
+                  name="Game_version"
+                  required
+                >
+                  <option disabled selected value="">请选择</option>
+                  <option value="Java">Java版</option>
+                  <option value="BE">基岩版</option>
+                </select>
+              </div>
+              <div class="col-md-max">
+                <label for="user_introduce" class="form-label"
+                >自我介绍（<i id="user_introduce_len">0</i>-300）</label
+                >
+                <textarea
+                  class="form-control"
+                  id="user_introduce"
+                  name="user_introduce"
+                  required
+                  minlength="30"
+                  maxlength="300"
+                  rows="4"
+                  placeholder="请用简短的语言介绍下自己吧~(30-300字)"
+                ></textarea>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="Rules"
+                    id="invalidCheck"
+                    required
+                  />
+                  <label
+                    class="form-check-label"
+                    for="invalidCheck"
+                    data-bs-toggle="modal"
+                    data-bs-target="#myModal"
+                  >
+                    同意服务器规则（点我查看，请务必看完~）
+                  </label>
+                  <div class="invalid-feedback">你必须要同意该规则＞﹏＜</div>
+                </div>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-primary" id="sub">
+                  提交并下一步
+                </button>
+              </div>
+            </form>
+            <!--  服务器规则  -->
+            <div class="ServerRules">
+              <!-- 模态框 -->
+              <div class="modal" id="myModal">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <!-- 模态框头部 -->
+                    <div class="modal-header">
+                      <h4 class="modal-title">服务器规则</h4>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                      ></button>
+                    </div>
+                    <!-- 模态框内容 -->
+                    <div class="modal-dialog modal-dialog-scrollable">
+                      <h5>1. 群内发言</h5>
+                      <ol>
+                        <li>玩家在群内应当文明发言，用词恰当得体</li>
+                        <li>
+                          玩家在群内禁止讨论别的服务器（包括但不限于：群号、IP、宣传等）
+                        </li>
+                        <li>
+                          玩家在群内禁止讨论服务器技术（包括但不限于：插件、服务端等）
+                        </li>
+                        <li>玩家在群内禁止辱骂、排挤、孤立、语言攻击他人</li>
+                        <li>玩家在群内禁止谈论政治敏感内容</li>
+                        <li>玩家在群内禁止谈论黄赌毒等一切违法事件</li>
+                        <li>
+                          玩家在发现他人违规时可以采取相应措施（包括但不限于：提醒、制止等）
+                        </li>
+                      </ol>
+                      <hr />
+                      <h5>2. 服务器游玩</h5>
+                      <ol>
+                        <li>
+                          玩家在游玩服务器时禁止使用任何作弊客户端（PVP客户端等是允许的）
+                        </li>
+                        <li>
+                          玩家在游玩服务器时禁止使用任何作弊工具（包括但不限于：作弊类模组、作弊类材质包等）
+                        </li>
+                        <li>玩家在游玩服务器时聊天同样需遵守群内发言规则</li>
+                        <li>
+                          玩家游玩过程中遇到问题，应首先参照帮助手册或者查看群内公告，若还有疑问，可向其他玩家或者OP寻求帮助。
+                        </li>
+                        <li>
+                          玩家在遇到问题寻求OP帮助时，应先确认是否已被提出或者群公告内提及；若已提及但玩家未按照解决方法尝试，OP有权拒绝回答
+                        </li>
+                        <li>OP处理问题时，若有不妥或者有误的地方，可以提出</li>
+                        <li>
+                          如果玩家对OP处理结果有任何疑义的，可以提问，但是请理性询问，严禁吵闹
+                        </li>
+                      </ol>
+                      <hr />
+                      <h5>3. 生存服规则</h5>
+                      <ol>
+                        <li>原则上以聚落为单位生存以减少服务器压力</li>
+                        <li>
+                          禁止一切违规模组和材质包，包括但不限于Xray等（Tweakroo
+                          等辅助类MOD除外）
+                        </li>
+                        <li>禁止利用任何BUG刷不可再生物品</li>
+                        <li>禁止建造大范围红石高频故意卡服（生电除外）</li>
+                        <li>禁止随意翻动/偷拿他人物品</li>
+                        <li>禁止任何破坏他人游戏体验的行为</li>
+                        <li>禁止破坏他人建筑或者机器设备</li>
+                      </ol>
+                      <hr />
+                      <h5>4. 测试服规则</h5>
+                      <ol>
+                        <li>禁止在测试服测试类似TNT大炮类东西</li>
+                        <li>禁止放置不受控循环命令方块后不管</li>
+                        <li>禁止将随机刻调到过大</li>
+                        <li>禁止一切可能危害服务器的操作</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <script>
+              ValueLength("#user_introduce", "#user_introduce_len");
+            </script>
+          </div>
+        </div>
+      </div>
+<!--      加载中-->
+      <div class="loading_cover"><div class="loading"><div class="square"></div><div class="square"></div><div class="square last"></div><div class="square clear"></div><div class="square"></div><div class="square last"></div><div class="square clear"></div><div class="square"></div><div class="square last"></div></div></div>
+    </main>
+  </body>
+</html>

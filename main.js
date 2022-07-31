@@ -12,6 +12,8 @@ const GetLength = require(path.join(__dirname,'getlength.js')); //获取长度
 const {CheckName,addUser} = require(path.join(__dirname,'mysql.js')); //数据库相关
 const {CheckLimit,Reset} = require(path.join(__dirname,'limit.js')); //api访问限制
 const {logger,submit,GetApi,PostApi,Error,Function} = require(path.join(__dirname,'logger.js')); //日志模块
+const {StrToBool} = require(path.join(__dirname,'transform.js')); //转换验证
+const {CheckInfo} = require(path.join(__dirname,'Check.js')); //转换验证
 //定时任务
 let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
 //初始化express
@@ -41,30 +43,39 @@ app.use(express.urlencoded({extended:false})) //form表单编码
 //表单数据存储API
 app.post("/api/registration", (req, res) =>
 {
-    PostApi.info("POST request from " + req.ip + ",target /api/registration");
-    const {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
-    submit.info("User register from " + req.ip);
-    //写入session
-    req.session.user = {
-        PlayerName: username,
-        UserName: account,
-        UserMode: User_Mode,
-        Age: Age,
-        playtime: playtime,
-        online: online_mode,
-        GameVersion: Game_version,
-        Introduce: user_introduce,
-        rule: Rules
+    PostApi.info(`[${req.protocol}] ` + "POST request from " + req.ip + ",target /api/registration");
+    let {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
+    submit.info("`[${req.protocol}] ` + User register from " + req.ip);
+    Function.info("Call function CheckInfo.");
+    if (CheckInfo(req))
+    {
+        online_mode = StrToBool(online_mode);
+        //写入session
+        req.session.user = {
+            PlayerName: username,
+            UserName: account,
+            UserMode: User_Mode,
+            Age: Age,
+            playtime: playtime,
+            online: online_mode,
+            GameVersion: Game_version,
+            Introduce: user_introduce,
+            rule: Rules
+        }
+        res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+        res.redirect("measurement"); //重定向至答题页面
+    }else{
+        Error.error("Receive illegal character from " + req.ip);
+        req.session.count = 2
+        res.sendFile(path.join(__dirname,"www/confirm.html"));
     }
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
-    res.redirect("measurement"); //重定向至答题页面
 });
 //答题验证api
 app.post("/api/validation", (req, res)=>
 {
-    PostApi.info("POST request from " + req.ip + ",target /api/validation");
+    PostApi.info(`[${req.protocol}] ` + "POST request from " + req.ip + ",target /api/validation");
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
-    submit.info("Receive answer from " + req.ip);
+    submit.info(`[${req.protocol}] ` + "Receive answer from " + req.ip);
     //判断是否已经判过分
     if(!req.session.count)
     {
@@ -78,7 +89,7 @@ app.post("/api/validation", (req, res)=>
     req.session.score = score;//分数写入session
     if(score >= config.passScore) //判断是否通过
     {
-        submit.info("User pass from " + req.ip);
+        submit.info(`[${req.protocol}] ` + "User pass from " + req.ip);
         //如果session内没有token字段则生成一个token并且写入
         if(!req.session.user.token)
         {
@@ -100,7 +111,7 @@ app.post("/api/validation", (req, res)=>
         //设置状态
         req.session.status = "SUCCESS";
     }else{
-        submit.info("User no pass from " + req.ip);
+        submit.info(`[${req.protocol}] ` + "User no pass from " + req.ip);
         req.session.status = "FAILURE";
     }
     //跳转至确认界面
@@ -109,21 +120,21 @@ app.post("/api/validation", (req, res)=>
 //处理访问根目录，即直接访问域名时
 app.get("/",(req, res)=>
 {
-    logger.debug("Client request for /resource/index.html from " + req.ip);
+    logger.debug(`[${req.protocol}] ` + "Client request for /resource/index.html from " + req.ip);
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     res.sendFile(path.join(__dirname,"www/index.html"));
 });
 //重试api
 app.get("/api/again",(req, res) =>
 {
-    GetApi.info("Get request from " + req.ip  + ",target /api/again");
+    GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/again");
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     //重定向至答题界面
     res.redirect("measurement");
 });
 //获取结果
 app.get("/api/result",(req, res) => {
-    GetApi.info("Get request from " + req.ip  + ",target /api/result");
+    GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/result");
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     //如果第二次答题且不通过
     if(req.session.count === 2 && req.session.status !== "SUCCESS")
@@ -157,7 +168,7 @@ app.get("/api/result",(req, res) => {
 //获取题目
 app.get("/api/question",(req, res)=>
 {
-    GetApi.info("Get request from " + req.ip  + ",target /api/question");
+    GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/question");
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     //判断答题次数
     switch (req.session.count)
@@ -165,7 +176,7 @@ app.get("/api/question",(req, res)=>
         case 2:
         {
             //如果是第二次则拒绝生成题目并且清空题目
-            Error.error("Forbidden access from " + req.ip);
+            Error.error(`[${req.protocol}] ` + "Forbidden access from " + req.ip);
             res.statusCode = 403;
             req.session.question = {};
             break;
@@ -187,7 +198,7 @@ app.get("/api/question",(req, res)=>
             req.session.question = GetQuestion(req,number);
         }
     }else{
-        Error.error("Forbidden access from " + req.ip);
+        Error.error(`[${req.protocol}] ` + "Forbidden access from " + req.ip);
         res.statusCode = 403;
     }
     res.send(req.session.question);
@@ -195,7 +206,7 @@ app.get("/api/question",(req, res)=>
 //判断用户名
 app.get("/api/judge",async (req, res) => {
     res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    GetApi.info("Get request from " + req.ip + ",target /api/judge");
+    GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip + ",target /api/judge");
     //判断api调用是否超过限制次数
     if(CheckLimit(req.ip) !== true)
     {
@@ -227,7 +238,7 @@ app.get("/api/judge",async (req, res) => {
         }
         res.send(exist);
     }else{
-        Error.error("Too much request from " + req.ip);
+        Error.error(`[${req.protocol}] ` + "Too much request from " + req.ip);
         res.statusCode = 429;
         res.send("Error!To many requests!Try again later.");
     }
@@ -240,9 +251,9 @@ app.get("/api/measurement",(req,res)=>
     {
         req.session.user.ip = req.ip;
         res.sendFile(path.join(__dirname,"www/test.html"))
-        logger.debug("Client request for /resource/test.html from " + req.ip);
+        logger.debug(`[${req.protocol}] ` + "Client request for /resource/test.html from " + req.ip);
     }else{
-        Error.error("Forbidden access from " + req.ip);
+        Error.error(`[${req.protocol}] ` + "Forbidden access from " + req.ip);
         res.statusCode = 403;
         res.sendFile(path.join(__dirname,"www/403.html"));
     }
@@ -250,7 +261,7 @@ app.get("/api/measurement",(req,res)=>
 //处理api请求
 app.get("/api/*",(req,res)=>
 {
-    logger.debug("Client request for " + req.path.substring(4) + " from " + req.ip);
+    logger.debug(`[${req.protocol}] ` + "Client request for " + req.path.substring(4) + " from " + req.ip);
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     res.sendFile(path.join(__dirname,"www",req.path.substring(4)),(err) =>
     {
@@ -271,7 +282,7 @@ app.get("*",(req,res)=>
 {
     res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
     res.sendFile(path.join(__dirname,"www",req.path));
-    logger.debug("Client request for " + req.path + " from " + req.ip);
+    logger.debug(`[${req.protocol}] ` + "Client request for " + req.path + " from " + req.ip);
 })
 //静态资源绑定
 app.use(express.static(path.join(__dirname,"/www"),{
