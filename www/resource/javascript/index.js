@@ -11,6 +11,7 @@ window.onload = function() {
                 "submit",
                 (event) => {
                     if (!form.checkValidity()) {
+                        console.log(event,form)
                         event.preventDefault();
                         event.stopPropagation();
                     }
@@ -39,30 +40,15 @@ window.onload = function() {
                                 [input_name]: obj.value,
                             }
                         }).then(response =>{
-                            if(response.data.PlayerName){
-                                switch (response.data.PlayerName){
-                                    case false:{
-                                        obj.classList.remove("is-invalid");
-                                        break;
-                                    }
-                                    case true:{
-                                        obj.classList.add("is-invalid");
-                                        break;
-                                    }
-                                }
-                            }else{
-                                switch (response.data.User){
-                                    case false:{
-                                        obj.classList.remove("is-invalid");
-                                        break;
-                                    }
-                                    case true:{
-                                        obj.classList.add("is-invalid");
-                                        break;
-                                    }
-                                }
+                            if (response.data.PlayerName == true) {
+                                obj.classList.remove("is-invalid");
+                            } else if (response.data.User == true) {
+                                obj.classList.remove("is-invalid");
+                            } else {
+                                obj.classList.add("is-invalid");
                             }
                         }).catch((error)=>{
+                            obj.classList.add("is-invalid");
                             console.log("[严重错误]",error.message)
                         })
                     }
@@ -70,5 +56,29 @@ window.onload = function() {
             )
         })
         // console.log(Game_name.values(),User.values())
+    })();
+    // 阻止表单提交
+    (()=>{
+     let button = document.querySelector("#sub")
+     let input_list = document.querySelectorAll("#Game_name,#Username")
+     button.addEventListener(
+         "click",
+         (obj)=>{
+         let Temp = false
+         input_list.forEach((input_obj)=>{
+             input_obj.classList.forEach((ClassName)=>{
+                 if (ClassName == "is-invalid") {
+                     Temp = true
+                 }
+             })
+         })
+         if (Temp) {
+             obj.preventDefault()
+             document.querySelector("#form-alert").style.display = "block"
+         } else {
+             document.querySelector("#form-alert").style.display = "None"
+         }
+     })
+        // if (input_list[0].classList.keys("is-invalid")&&input_list[1].classList.values())
     })();
 }
