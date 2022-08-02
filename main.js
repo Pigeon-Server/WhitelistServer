@@ -297,4 +297,4 @@ app.use(express.static(path.join(__dirname,"/www"),{
     }
 }));
 https.listen(port);
-logger.debug(`Server running at http://0.0.0.0:${port}/`);
+logger.debug(`Server running at https://0.0.0.0:${port}/`);
