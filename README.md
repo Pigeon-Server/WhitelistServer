@@ -42,7 +42,7 @@
 | ----------------- | -------- | ----------------- |
 | /api/registration | POST     | 无参数            |
 | /api/validation   | POST     | 无参数            |
-| /api/question     | GET      | number            |
+| /api/question     | GET      | game,server       |
 | /api/judge        | GET      | account，username |
 | /api/measurement  | GET      | 无参数            |
 | /api/result       | GET      | 无参数            |
@@ -66,7 +66,8 @@
   * 地址 ： /api/question
   * 获取方式 ： GET
   * 接口参数 ： 
-     * 可选参数 ：number（指定获取的题目数量，默认是9）
+     * 可选参数 ：game（指定获取的有关游戏的题目数量，默认是10）
+     * 可选参数 ：server(指定获取的有关服务器规则的题目数量，默认是5)
   * 说明 ：获取题目
   * 返回值格式 : 
   `[{"question": "题目",
