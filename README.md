@@ -5,7 +5,7 @@
 证书文件请放置在www/certificate下，并重命名为www.key和www.crt  
 经[myssl](https://myssl.com/)验证，本网页可以达到A+的SSL/TLS安全标准
 这是已经部署的检测结果
- ![QQ截图20220802160336](https://user-images.githubusercontent.com/50048293/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)
+ ![QQ截图20220802160336](https://user-images.githubusercontent.com/50048293/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
 更加具体的结果请[点击下载](https://files-1304987401.cos.ap-shanghai.myqcloud.com/myssl.png)
 
 ## 配置文件详解
