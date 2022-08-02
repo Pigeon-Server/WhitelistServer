@@ -191,11 +191,11 @@ app.get("/api/question",(req, res)=>
     }
     if(req.session.user)
     {
-        let {number} = req.query;
+        let {game,server} = req.query;
         if(!req.session.question)//防止刷新重置题库
         {
             //生成题库
-            req.session.question = GetQuestion(req,number);
+            req.session.question = GetQuestion(req,game,server);
         }
     }else{
         Error.error(`[${req.protocol}] ` + "Forbidden access from " + req.ip);
