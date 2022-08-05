@@ -1,6 +1,6 @@
 const log = require("log4js");
 const path = require("path");
-const config = require(path.join(__dirname,'config.json'));
+const config = require(path.join(__dirname,'../config.json'));
 log.configure(
     {
         appenders: {

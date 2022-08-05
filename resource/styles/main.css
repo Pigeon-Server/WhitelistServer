@@ -1,0 +1,164 @@
+/* 全局 */
+body,html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: max-content;
+}
+i {
+  font-style: normal;
+}
+textarea {
+  /*min-height: 100px;*/
+  max-height: 300px;
+  height: 100px;
+}
+/* 工具 */
+.Centered {
+  display: flex;
+}
+/* 覆盖Bootstrap部分样式 */
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: white;
+}
+h6,
+.h6,
+h5,
+.h5,
+h4,
+.h4,
+h3,
+.h3,
+h2,
+.h2,
+h1,
+.h1 {
+  margin-bottom: 0;
+}
+/* 定义字体 */
+@font-face {
+  font-family: Minecraft;
+  src: url(../font/Minecraft/minecraft.ttf);
+}
+@font-face {
+  font-family: NotoSansSC-Medium;
+  src: url("../font/Noto_Sans_SC/NotoSansSC-Medium.otf");
+}
+* {
+  font-family: NotoSansSC-Medium;
+}
+/* 页边距 */
+.Page-container {
+  width: 70%;
+  margin: 0 auto;
+}
+/* 颜色定义 */
+.Main-background-color,
+.box-header {
+  background-color: #6610f2;
+}
+.Link-URL-color,
+.title {
+  color: white;
+}
+.Link-URL-color:hover {
+  color: #6610f2;
+}
+/* 字体定义 */
+.title {
+  display: inline-block;
+  font-family: Minecraft;
+  font-size: 20px;
+  margin: 5px 0;
+}
+/* 页面框架 */
+body {
+  background-image: url("../image/Home_bg.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+main {
+  padding-top: 35px;
+}
+main .Page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.Page-container>.main-box,
+.Page-container>form {
+  width: 80%;
+}
+.Page-container>form{
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+.Page-container>form>.main-box {
+  width: 100%;
+  display: inline-block;
+}
+.main-box {
+  margin-bottom: 15px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+.box-header {
+  padding: 15px;
+  border-radius: 10px 10px 0 0;
+}
+.box-header h2 {
+  font-size: 1.1rem;
+  color: white;
+}
+.box-content {
+  width: 100%;
+  /*height: 100%;*/
+  padding: 15px 10px;
+  border-radius: 0 0 10px 10px;
+}
+/* 微调 */
+#Username {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.ServerRules .modal-dialog {
+  padding: 0 15px;
+}
+.ServerRules .modal-dialog h5 {
+  margin-bottom: 5px;
+}
+.ServerRules .modal-dialog li {
+  margin: 3px 0;
+}
+/* 设备适配 */
+@media screen and (max-width: 1220px) {
+  .Page-container {
+    width: 85%;
+  }
+  .Page-container>.main-box,
+  form>.main-box {
+    width: 90%;
+  }
+}
+@media screen and (max-width: 768px) {
+  .Page-container {
+    width: 90%;
+  }
+  .Page-container>.main-box,
+  form>.main-box {
+    width: 100%;
+  }
+  .Page-container > form {
+    flex-direction: column;
+  }
+  .Page-container > form >.main-box {
+    width: 100%;
+  }
+  .confirm {
+    width: 90%;
+  }
+}

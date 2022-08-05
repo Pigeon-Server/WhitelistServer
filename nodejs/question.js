@@ -7,8 +7,8 @@ function GetQuestion(req, game = 10,server = 5)
 {
     req.session.length = game + server;
     let output = [];
-    let jsonArrGame = JSON.parse(fs.readFileSync(path.join(__dirname,"www/game.json"),{encoding:"utf-8"}));
-    let jsonArrServer = JSON.parse(fs.readFileSync(path.join(__dirname,"www/server.json"),{encoding:"utf-8"}));
+    let jsonArrGame = JSON.parse(fs.readFileSync(path.join(__dirname,"../question_data/game.json"),{encoding:"utf-8"}));
+    let jsonArrServer = JSON.parse(fs.readFileSync(path.join(__dirname,"../question_data/server.json"),{encoding:"utf-8"}));
     let lengthGame = GetLength(jsonArrGame);
     let lengthServer = GetLength(jsonArrServer)
     if(game > lengthGame && server <= lengthServer )
@@ -43,8 +43,8 @@ function GetQuestion(req, game = 10,server = 5)
 function JudgeAnswer(input,number)
 {
     let right = 0;
-    let jsonArrGame = JSON.parse(fs.readFileSync(path.join(__dirname,"www/game.json"),{encoding:"utf-8"}));
-    let jsonArrServer = JSON.parse(fs.readFileSync(path.join(__dirname,"www/server.json"),{encoding:"utf-8"}));
+    let jsonArrGame = JSON.parse(fs.readFileSync(path.join(__dirname,"../question_data/game.json"),{encoding:"utf-8"}));
+    let jsonArrServer = JSON.parse(fs.readFileSync(path.join(__dirname,"../question_data/server.json"),{encoding:"utf-8"}));
     for (let i in input)
     {
         switch (i <= 500)

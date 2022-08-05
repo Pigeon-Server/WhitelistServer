@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="shortcut icon" href="resource/Web-Logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pigeon Server - 发生错误 - {{ErrorCode}}</title>
+    <!-- 基础库导入 -->
+    <script src="resource/lib/bootstrap/bootstrap.js"></script>
+    <link rel="stylesheet" href="resource/lib/bootstrap/bootstrap.css" />
+    <!-- 自定义 -->
+    <script src="resource/javascript/main.js"></script>
+    <link rel="stylesheet" href="resource/styles/main.css" />
+    <link rel="stylesheet" href="resource/styles/Page/Error_Page.css" />
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg Main-background-color">
+        <div class="Page-container">
+            <div class="container-fluid">
+                <a class="navbar-brand title" href="#">Pigeon Server</a>
+            </div>
+        </div>
+    </nav>
+</header>
+<main class="Error-Page">
+    <div class="Page-container">
+        <div class="error">
+            <h1>{{ErrorCode}}</h1>
+            <h2>{{Msg}}</h2>
+        </div>
+    </div>
+</main>
+</body>
+</html>

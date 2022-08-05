@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <link rel="shortcut icon" href="Web-Logo.png">
+    <link rel="shortcut icon" href="resource/Web-Logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pigeon Server 白名单验证</title>
     <!-- 基础库导入 -->
@@ -16,6 +16,7 @@
     <script src="./resource/javascript/main.js"></script>
     <script src="./resource/javascript/index.js"></script>
     <link rel="stylesheet" href="./resource/styles/main.css" />
+    <link rel="stylesheet" href="./resource/styles/Page/Page_index.css" />
   </head>
   <body>
     <header>
@@ -38,7 +39,7 @@
           </div>
           <!-- 块容器 -->
           <div class="box-content">
-            <div class="alert alert-danger" id="form-alert" style="display: none" role="alert">
+            <div class="alert alert-danger" id="QQ_and_KOOK-form-alert" style="display: none" role="alert">
               请检查游戏名与QQ号/KOOK用户名，可能与他人重复了
             </div>
             <form method="post" action="./api/registration" class="row g-3 needs-validation" novalidate>
@@ -80,15 +81,17 @@
               </div>
               <div class="col-md-2">
                 <label for="Age" class="form-label">年龄</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="Age"
-                  name="Age"
-                  min="16"
-                  max="60"
-                  required
-                />
+                <select
+                   class="form-select"
+                   id="Age"
+                   name="Age"
+                   required
+                >
+                  <option disabled selected value="">请选择</option>
+                  <option value="1">16岁及以下</option>
+                  <option value="2">17~22岁</option>
+                  <option value="3">22岁以上</option>
+                </select>
               </div>
               <div class="col-md-4">
                 <label for="playtime" class="form-label"
@@ -180,8 +183,8 @@
             <!--  服务器规则  -->
             <div class="ServerRules">
               <!-- 模态框 -->
-              <div class="modal" id="myModal">
-                <div class="modal-dialog">
+              <div class="modal fade" id="myModal">
+                <div class="modal-dialog modal-xl">
                   <div class="modal-content">
                     <!-- 模态框头部 -->
                     <div class="modal-header">
@@ -258,9 +261,6 @@
                 </div>
               </div>
             </div>
-            <script>
-              ValueLength("#user_introduce", "#user_introduce_len");
-            </script>
           </div>
         </div>
       </div>
