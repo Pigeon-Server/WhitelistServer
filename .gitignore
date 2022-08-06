@@ -105,5 +105,4 @@ dist
 
 .idea/
 config.json
-/certificate/certificate.crt
-/certificate/certificate.key
+/log/

@@ -2,29 +2,31 @@
 为了更加方便的白名单申请，应运而生
 
 ## 关于SSL/TLS
-证书文件请放置在www/certificate下，并重命名为www.key和www.crt  
+证书文件请放置在certificate文件夹下，并重命名为certificate.key和certificate.crt  
 经[myssl](https://myssl.com/)验证，本网页可以达到A+的SSL/TLS安全标准
 这是已经部署的检测结果
- ![QQ截图20220802160336](/wiki/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
+ [QQ截图20220802160336](/wiki/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
 更加具体的结果请看[这里](/wiki/myssl.png)
 
 ## 配置文件详解
 
-| 参数名           | 类型 | 作用          |
-| ----------------- | -------- | ----------------- |
-| port | int     | 网页监听的端口            |
-| maxage   | int     | cookie过期时间（ms）            |
-| cookiekey     | string      | 用来加密cookie的随机字符串            |
-| database       | dictionary      | 存储数据库连接设置 |
-| database.host  | string      | 数据库地址            |
-| database.username       | string      | 用户名            |
-| database.password        | string      | 密码            |
-| database.name        | string      | 数据库名称            |
-| database.port        | int      | 数据库端口            |
-| LogSize       | string      | 单个日志文件大小            |
-| BackUpNumber        | int      | 保存的日志文件数目            |
-| EnableCompress        | boolean      | 是否启用压缩            |
-| passScore       | int      | 通过的分数            |
+| 参数名           | 类型         | 作用               |
+| ----------------- |------------|------------------|
+| port | int        | 网页监听的端口          |
+| maxage   | int        | cookie过期时间（ms）   |
+| cookiekey     | string     | 用来加密cookie的随机字符串 |
+| database       | dictionary | 存储数据库连接设置        |
+| database.host  | string     | 数据库地址            |
+| database.username       | string     | 用户名              |
+| database.password        | string     | 密码               |
+| database.name        | string     | 数据库名称            |
+| database.port        | int        | 数据库端口            |
+| LogSize       | string     | 单个日志文件大小         |
+| BackUpNumber        | int        | 保存的日志文件数目        |
+| EnableCompress        | boolean    | 是否启用压缩           |
+| passScore       | int        | 通过的分数            |
+| EnableHTTPS       | boolean    | 是否使用HTTPS        |
+| EnableHSTS       | boolean        | 是否启用HSTS         |
 
 ## log文件分类
 

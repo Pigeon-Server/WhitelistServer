@@ -12,5 +12,7 @@
   "LogSize": "10M",
   "BackUpNumber": 10,
   "EnableCompress": true,
-  "passScore": 70
+  "passScore": 70,
+  "EnableHTTPS": true,
+  "EnableHSTS": true
 }
