@@ -104,3 +104,6 @@ dist
 .tern-port
 
 .idea/
+config.json
+/certificate/certificate.crt
+/certificate/certificate.key

@@ -1,5 +1,4 @@
 const express = require("express");
-const path = require("path");
 const route = express.Router();
 
 const api_func = require("../router_handler/api");

@@ -48,7 +48,7 @@
           </div>
 <!--          未通过显示-->
           <div class="result" v-else-if="status == '未通过'">
-            <a href="/index" style="color: red">返回并重新答题</a>
+            <a href="/api/again" style="color: red">返回并重新答题</a>
           </div>
 <!--          错误次数过多显示-->
           <div class="result" v-else-if="status == '错误次数过多'">

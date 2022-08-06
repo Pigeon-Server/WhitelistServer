@@ -1,22 +1,20 @@
-// const cookieParser = require('cookie-parser'); //cookie
-// const session = require('express-session'); //session
 const path = require("path");
 const stringRandom = require('string-random'); //随机字符
 // 自定义库
-const config = require(path.join(__dirname,'../config.json')); //配置读取
-const {GetQuestion,JudgeAnswer} = require(path.join(__dirname,'../nodejs/question.js')); //获取问题以及判断正误
-const GetLength = require(path.join(__dirname,'../nodejs/getlength.js')); //获取长度
-const {CheckName,addUser} = require(path.join(__dirname,'../nodejs/mysql.js')); //数据库相关
-const {CheckLimit,Reset} = require(path.join(__dirname,'../nodejs/limit.js')); //api访问限制
-const {logger,submit,GetApi,PostApi,Error,Function} = require(path.join(__dirname,'../nodejs/logger.js')); //日志模块
-const {StrToBool} = require(path.join(__dirname,'../nodejs/transform.js')); //转换验证
-const {CheckInfo} = require(path.join(__dirname,'../nodejs/Check.js'));
+const config = require(path.join(__dirname, '../config.json'));  //配置读取
+const {GetQuestion,JudgeAnswer} = require('../nodejs/question.js'); //获取问题以及判断正误
+const GetLength = require('../nodejs/getlength.js'); //获取长度
+const {CheckName,addUser} = require('../nodejs/mysql.js'); //数据库相关
+const {CheckLimit,Reset} = require('../nodejs/limit.js'); //api访问限制
+const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
+const {StrToBool,EnableHSTS} = require('../nodejs/transform.js'); //转换验证
+const {CheckInfo} = require('../nodejs/Check.js');
 //定时任务
 let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
 
-// 判断游戏名/社交账号是否被绑定API(POST)
+// 判断游戏名/社交账号是否被绑定API(GET)
 exports.judge = async (req, res) => {
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip + ",target /api/judge");
     //判断api调用是否超过限制次数
     if(CheckLimit(req.ip) !== true)
@@ -59,12 +57,12 @@ exports.judge = async (req, res) => {
 exports.registration = (req, res) =>
 {
     PostApi.info(`[${req.protocol}] ` + "POST request from " + req.ip + ",target /api/registration");
-    let {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
+    EnableHSTS(res);
+    const {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
     submit.info("`[${req.protocol}] ` + User register from " + req.ip);
     Function.info("Call function CheckInfo.");
     if (CheckInfo(req))
     {
-        online_mode = StrToBool(online_mode);
         //写入session
         req.session.user = {
             PlayerName: username,
@@ -72,12 +70,11 @@ exports.registration = (req, res) =>
             UserMode: User_Mode,
             Age: Age,
             playtime: playtime,
-            online: online_mode,
+            online: StrToBool(online_mode),
             GameVersion: Game_version,
             Introduce: user_introduce,
             rule: Rules
         }
-        res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
         res.redirect("measurement"); //重定向至答题页面
     }else{
         Error.error("Receive illegal character from " + req.ip);
@@ -90,7 +87,7 @@ exports.registration = (req, res) =>
 //问卷页面
 exports.measurement = (req,res)=>
 {
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     if(req.session.user)
     {
         req.session.user.ip = req.ip;
@@ -109,7 +106,7 @@ exports.measurement = (req,res)=>
 exports.question = (req, res)=>
 {
     GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/question");
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     //判断答题次数
     switch (req.session.count)
     {
@@ -144,11 +141,11 @@ exports.question = (req, res)=>
     res.send(req.session.question);
 }
 
-// 答题提交API(GET)
+// 答题提交API(POST)
 exports.validation = (req, res)=>
 {
     PostApi.info(`[${req.protocol}] ` + "POST request from " + req.ip + ",target /api/validation");
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     submit.info(`[${req.protocol}] ` + "Receive answer from " + req.ip);
     //判断是否已经判过分
     if(!req.session.count)
@@ -195,7 +192,7 @@ exports.validation = (req, res)=>
 // 输出答题结果API(GET)
 exports.result = (req, res) => {
     GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/result");
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     //如果第二次答题且不通过
     if(req.session.count === 2 && req.session.status !== "SUCCESS")
     {
@@ -203,7 +200,7 @@ exports.result = (req, res) => {
             "score": 0,
             "info":"重试超过两次，请半小时后重试"});//不删除session使session自己过期
     }else if(req.session.status === "SUCCESS"){
-        const data = {
+        res.send({
             "score": req.session.score,
             "status": req.session.status,
             "userinfo": {
@@ -213,16 +210,14 @@ exports.result = (req, res) => {
                 Game_version: req.session.user.GameVersion,
                 token: req.session.user.token
             }
-        }
-        res.send(data);
+        });
         //删除session
         req.session.destroy();
     }else{
-        const data = {
+        res.send({
             "score": req.session.score,
             "status": req.session.status
-        }
-        res.send(data);
+        });
     }
 }
 
@@ -230,7 +225,7 @@ exports.result = (req, res) => {
 exports.again = (req, res) =>
 {
     GetApi.info(`[${req.protocol}] ` + "Get request from " + req.ip  + ",target /api/again");
-    res.setHeader("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+    EnableHSTS(res);
     //重定向至答题界面
     res.redirect("measurement");
 }
