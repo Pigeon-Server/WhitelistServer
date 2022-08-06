@@ -1,9 +1,7 @@
 function randomNum(max)
 {
-    const min = 1;
-    const range = max - min;
     const random = Math.random();
-    return min + Math.round(random * range);
+    return 1 + Math.round(random * (max - 1));
 }
 function randomArr(max,length = 1)
 {
@@ -21,9 +19,8 @@ function randomArr(max,length = 1)
             let num = randomNum(max);
             if (output.includes(num))
             {
-                continue
-            }else
-            {
+                continue;
+            }else{
                 output.push(num);
             }
             length--;

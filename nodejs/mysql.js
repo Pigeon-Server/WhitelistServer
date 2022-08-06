@@ -24,7 +24,7 @@ function addUser(userinfo)
     })
 }
 
-const CheckName =
+module.exports.CheckName =
     {
         "User":(account)  => {
             return new Promise((res,rej)=>
@@ -77,5 +77,4 @@ function RunCommand(sql,data = []){
 }
 
 module.exports.addUser = addUser;
-module.exports.CheckName = CheckName;
 module.exports.RunCommand = RunCommand;

@@ -94,17 +94,11 @@ log.configure(
         }
     }
 )
-const logger = log.getLogger('Access');
-const submit = log.getLogger('Submit');
-const GetApi = log.getLogger('GetAPI');
-const PostApi = log.getLogger('PostAPI');
-const Function = log.getLogger('Function');
-const Error = log.getLogger('Error');
 
-module.exports.logger = logger;
-module.exports.submit = submit;
-module.exports.GetApi = GetApi;
-module.exports.PostApi = PostApi;
-module.exports.Function = Function;
-module.exports.Error = Error;
+module.exports.logger = log.getLogger('Access');
+module.exports.submit = log.getLogger('Submit');
+module.exports.GetApi = log.getLogger('GetAPI');
+module.exports.PostApi = log.getLogger('PostAPI');
+module.exports.Function = log.getLogger('Function');
+module.exports.Error = log.getLogger('Error');
 

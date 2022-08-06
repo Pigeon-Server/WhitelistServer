@@ -2,7 +2,7 @@ function CheckInfo(req)
 {
     const data = req.body;
     const username = data["username"];
-    if (username.match( "^\\w+$") === null){
+    if (username.match("^\\w+$") === null){
         return false;
     }
     for (let raw in data)
