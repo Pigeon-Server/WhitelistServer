@@ -227,7 +227,9 @@ exports.validation = (req, res)=>
         {
             Function.info("Add player successfully");
             // 发送邮件
-            email.sendEmail(email.buildEmail_template(req))
+            if (config.Email_config.enable == true) {
+                email.sendEmail(email.buildEmail_template(req))
+            }
         }).catch(err => Error.error(err));
         //设置状态
         req.session.status = "SUCCESS";
