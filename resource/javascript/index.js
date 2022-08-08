@@ -1,4 +1,28 @@
+// 激活提交按钮
+function onButton() {
+    document.querySelector("#sub").classList.remove("disabled")
+}
 window.onload = function() {
+    let reCAPTCHA_v2_key = null;
+    // 获取reCAPTCHA Key
+    (()=>{
+        axios
+            .get("/api/reCAPTCHA")
+            .then(data=>{
+                reCAPTCHA_v2_key = data.data.reCAPTCHA_v2_key
+                // 更改html
+                document.querySelector(".g-recaptcha").setAttribute("data-sitekey",data.data.reCAPTCHA_v2_key)
+                // 加载js
+                let script = document.createElement('script');
+                script.type = 'text/javaScript';
+                script.src = 'https://recaptcha.net/recaptcha/api.js';
+                document.getElementsByTagName('head')[0].appendChild(script);
+            })
+            .catch(err=>{
+                alert("验证码加载失败")
+                location.reload()
+            })
+    })();
     //字数计算
     const input_box = document.querySelector("#user_introduce");
     const display_box = document.querySelector("#user_introduce_len");
@@ -14,12 +38,9 @@ window.onload = function() {
         }
     });
     //表单非空验证
-    // Example starter JavaScript for disabling form submissions if there are invalid fields
     (() => {
         "use strict";
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
         const forms = document.querySelectorAll(".needs-validation");
-        // Loop over them and prevent submission
         Array.from(forms).forEach((form) => {
             form.addEventListener(
                 "submit",
@@ -69,7 +90,6 @@ window.onload = function() {
                 }
             )
         })
-        // console.log(Game_name.values(),User.values())
     })();
     // 阻止表单提交
     (()=>{
@@ -93,6 +113,5 @@ window.onload = function() {
              document.querySelector("#QQ_and_KOOK-form-alert").style.display = "None"
          }
      })
-        // if (input_list[0].classList.keys("is-invalid")&&input_list[1].classList.values())
     })();
 }

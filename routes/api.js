@@ -5,6 +5,9 @@ const api_func = require("../router_handler/api");
 
 //api定义
 
+//
+route.get("/reCAPTCHA", api_func.reCAPTCHA)
+
 // 表单数据存储API
 route.post("/registration", api_func.registration);
 

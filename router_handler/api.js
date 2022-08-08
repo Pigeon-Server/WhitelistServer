@@ -9,8 +9,22 @@ const {CheckLimit,Reset} = require('../nodejs/limit.js'); //api访问限制
 const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
 const {StrToBool,EnableHSTS} = require('../nodejs/transform.js'); //转换验证
 const {CheckInfo} = require('../nodejs/Check.js');
+const email = require('../nodejs/email');
+const axios = require("axios");
+const qs = require("qs");
+// 配置文件转换
+const Web_token = config.reCAPTCHA.Web_token;
+const Server_token = config.reCAPTCHA.Server_token;
 //定时任务
 let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
+
+// reCAPTCHA Web_key传输
+exports.reCAPTCHA = (req, res) => {
+    EnableHSTS(res);
+    res.send({
+        "reCAPTCHA_v2_key": Web_token
+    })
+}
 
 // 判断游戏名/社交账号是否被绑定API(GET)
 exports.judge = async (req, res) => {
@@ -61,25 +75,59 @@ exports.registration = (req, res) =>
     const {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
     submit.info("`[${req.protocol}] ` + User register from " + req.ip);
     Function.info("Call function CheckInfo.");
-    if (CheckInfo(req))
-    {
-        //写入session
-        req.session.user = {
-            PlayerName: username,
-            UserName: account,
-            UserMode: User_Mode,
-            Age: Age,
-            playtime: playtime,
-            online: StrToBool(online_mode),
-            GameVersion: Game_version,
-            Introduce: user_introduce,
-            rule: Rules
+
+    if (!req.body["g-recaptcha-response"]) {
+        res.render("Error",{
+            ErrorCode: "403 Forbidden",
+            Msg: "缺少Google reCAPTCHA token"
+        })
+    } else {
+        // 验证码解析
+        let data = {
+            secret: Server_token,
+            response: req.body["g-recaptcha-response"],
         }
-        res.redirect("measurement"); //重定向至答题页面
-    }else{
-        Error.error("Receive illegal character from " + req.ip);
-        req.session.count = 2
-        res.sendFile(path.join(__dirname,"../www/confirm.html"));
+        axios
+            .post("https://recaptcha.net/recaptcha/api/siteverify", qs.stringify(data))
+            .then(
+                data => {
+                    const success = data.data.success;
+                    if (success) {
+                        if (CheckInfo(req))
+                        {
+                            //写入session
+                            req.session.user = {
+                                PlayerName: username,
+                                UserName: account,
+                                UserMode: User_Mode,
+                                Age: Age,
+                                playtime: playtime,
+                                online: StrToBool(online_mode),
+                                GameVersion: Game_version,
+                                Introduce: user_introduce,
+                                rule: Rules
+                            }
+                            res.redirect("measurement"); //重定向至答题页面
+                        }else{
+                            Error.error("Receive illegal character from " + req.ip);
+                            req.session.count = 2
+                            res.sendFile(path.join(__dirname,"../www/confirm.html"));
+                        }
+                    } else if (!success) {
+                        res.render("Error",{
+                            ErrorCode: "403 Forbidden",
+                            Msg: "Google reCAPTCHA验证失败"
+                        })
+                    }
+                }
+            )
+            .catch(error => {
+                Error.error(error)
+                res.render("Error",{
+                    ErrorCode: "403 Forbidden",
+                    Msg: "尝试进行Google reCAPTCHA验证时发生错误"
+                })
+            })
     }
 }
 
@@ -178,6 +226,8 @@ exports.validation = (req, res)=>
         addUser(req.session.user).then(result =>
         {
             Function.info("Add player successfully");
+            // 发送邮件
+            email.sendEmail(email.buildEmail_template(req))
         }).catch(err => Error.error(err));
         //设置状态
         req.session.status = "SUCCESS";
