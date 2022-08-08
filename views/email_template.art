@@ -25,13 +25,13 @@
             </div>
             <div style="width:680px;padding:0 10px;margin:0 auto;">
                 <div style="line-height:1.5;font-size:14px;margin-bottom:25px;color:#4d4d4d;">
-                    <h3 style="display:block;margin-bottom:15px;">尊敬的管理员,您好!当前收到一条新的白名单申请,测试分数:${req.session.user.score}</h3>
+                    <h3 style="display:block;margin-bottom:15px;">尊敬的管理员,您好!当前收到一条新的白名单申请,测试分数：{{Score}}</h3>
                     <strong style="display:block;margin-bottom:15px;">
                         <ul>
-                            <li>游戏名：${req.session.user.PlayerName}[游玩时长:${req.session.user.playtime}]</li>
-                            <li>社交账户：${req.session.user.UserName}(${req.session.user.UserMode})</li>
-                            <li>游戏版本：${req.session.user.GameVersion}[正版:${req.session.user.online}]</li>
-                            <li>年龄：${req.session.user.Age}</li>
+                            <li>游戏名：{{data.Player_Name}} [游玩时长:{{data.playtime}}]</li>
+                            <li>社交账户：{{data.UserName}} ({{data.UserMode}})</li>
+                            <li>游戏版本：{{data.GameVersion}} [正版:{{data.Online}}]</li>
+                            <li>年龄：{{data.Age}}</li>
                         </ul>
                         <textarea disabled style="margin-top: 15px;
                                     max-width: 100%;
@@ -41,7 +41,7 @@
                                     min-height: 200px;
                                     font-size: 18px;
                                     background-color: transparent;
-                                ">${req.session.user.Introduce}</textarea>
+                                ">{{data.Introduce}}</textarea>
                     </strong>
                 </div>
             </div>

@@ -227,7 +227,7 @@ exports.validation = (req, res)=>
         {
             Function.info("Add player successfully");
             // 发送邮件
-            if (config.Email_config.enable == true) {
+            if (config.Email_config.enable) {
                 email.sendEmail(email.buildEmail_template(req))
             }
         }).catch(err => Error.error(err));

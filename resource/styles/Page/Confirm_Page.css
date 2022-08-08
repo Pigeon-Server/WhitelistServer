@@ -47,3 +47,38 @@ main {
     color: #b02a37;
     text-align: center;
 }
+/* 设备适配 */
+@media screen and (max-width: 1220px) {
+    .confirm {
+        width: 80%;
+    }
+    .confirm-content {
+        padding: 10px 0;
+    }
+    .confirm-content .result {
+        padding: 15px;
+    }
+    .confirm-content h4 {
+        margin-bottom: 20px;
+    }
+    .confirm-content h1 {
+        margin-bottom: 10px;
+        font-size: 4rem;
+    }
+
+}
+@media screen and (max-width: 768px) {
+    .confirm {
+        width: 95%;
+        /*min-width: 400px;*/
+    }
+    .confirm-content .result {
+        padding: 10px;
+    }
+    .result h4 {
+        margin-bottom: 0;
+    }
+    .confirm-content h1 {
+        font-size: 3rem;
+    }
+}

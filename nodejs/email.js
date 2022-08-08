@@ -1,21 +1,28 @@
 const path = require("path");
 const fs = require("fs")
+const template = require('art-template');
 const config = require(path.join(__dirname, '../config.json'));  //配置读取
 const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
 // 邮箱验证
 const nodemailer = require('nodemailer'); //发送邮件的node插件
 
 exports.buildEmail_template = function buildEmail_template (req) {
-    return {
-        content: fs.readFileSync(path.join(__dirname, '../www/email_template.html')).toString()
-    }
+    return template(path.join(__dirname, '../views', 'email_template.art'),{
+        data: {
+            Score: req.session.user.score,
+            Player_Name: req.session.user.PlayerName,
+            playtime: req.session.user.playtime,
+            UserName: req.session.user.UserName,
+            UserMode: req.session.user.UserMode,
+            GameVersion: req.session.user.GameVersion,
+            Online: req.session.user.online,
+            Age: req.session.user.Age,
+            Introduce: req.session.user.Introduce
+        }
+    })
 }
 
 exports.sendEmail = function sendEmail (email_template){
-
-    let email_data = email_template;
-
-    email_data["email"] = config.Email_config.Admin_Email
 
     let SSL = false
 
@@ -34,15 +41,15 @@ exports.sendEmail = function sendEmail (email_template){
     });
     let mailOptions = {
         from: config.Email_config.MAIL_FROM_NAME + config.Email_config.MAIL_FROM_ADDRESS, // 发送者昵称和地址
-        to: email_data.email, // 接收者的邮箱地址
+        to: config.Email_config.Admin_Email, // 接收者的邮箱地址
         subject: '新的白名单申请', // 邮件主题
-        html: email_data.content
+        html: email_template
     };
     //发送邮件
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             return console.log(error);
         }
-        console.log('邮件发送成功 ID：', info.messageId);
+        logger.log('邮件发送成功 ID：', info.messageId);
     });
 }
