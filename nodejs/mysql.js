@@ -24,6 +24,19 @@ function addUser(userinfo)
     })
 }
 
+function checkToken(token)
+{
+    return new Promise((res,rej)=>{
+        database.query('select * from wait where token = ?',[token],(err, result) => {
+            if(!err){
+                res(result);
+            }else {
+                rej(err)
+            }
+        })
+    })
+}
+
 module.exports.CheckName =
     {
         "User":(account)  => {
@@ -78,3 +91,4 @@ function RunCommand(sql,data = []){
 
 module.exports.addUser = addUser;
 module.exports.RunCommand = RunCommand;
+module.exports.checkToken = checkToken

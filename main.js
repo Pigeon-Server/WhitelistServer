@@ -35,11 +35,6 @@ app.use(session({
     rolling: true
 }));
 
-// 跨路由修复
-// const bodyParser = require('body-parser');
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
-
 //注册post参数解析
 app.use(express.urlencoded({extended:false})); //form表单编码
 

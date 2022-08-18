@@ -6,7 +6,7 @@ const qs = require("qs");
 const config = require(path.join(__dirname, '../config.json'));  //配置读取
 const {GetQuestion,JudgeAnswer} = require('../nodejs/question.js'); //获取问题以及判断正误
 const GetLength = require('../nodejs/getlength.js'); //获取长度
-const {CheckName,addUser} = require('../nodejs/mysql.js'); //数据库相关
+const {CheckName,addUser,checkToken} = require('../nodejs/mysql.js'); //数据库相关
 const {CheckLimit,Reset} = require('../nodejs/limit.js'); //api访问限制
 const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
 const {StrToBool,EnableHSTS} = require('../nodejs/transform.js'); //转换验证
@@ -202,25 +202,34 @@ exports.validation = (req, res)=>
     //调用判分函数
     let score = JudgeAnswer(req.body,req.session.length);
     req.session.score = score;//分数写入session
-    if(score >= config.passScore) //判断是否通过
+    let token;
+    if (score >= config.passScore) //判断是否通过
     {
         submit.info(`[${req.protocol}] User pass from ${req.ip}`);
         //如果session内没有token字段则生成一个token并且写入
-        if(!req.session.user.token)
-        {
-            Function.info("Call function stringRandom.");
-            req.session.user.token = stringRandom(16, {
-                letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                numbers: false
-            })
+        if (!req.session.user.token) {
+            while (true)
+            {
+                Function.info("Call function stringRandom.");
+                token = stringRandom(16, {
+                    letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                    numbers: false
+                })
+                Function.info("Call function checkToken.");
+                checkToken(token).then(result => {
+                    if (result.length < 1){
+                        req.session.user.token = token
+                        break
+                    }
+                }).catch(err => Error.error(err))
+            }
         }
         //向session.user字段内添加分数和重试次数
         req.session.user.score = req.session.score;
         req.session.user.number = req.session.count;
         Function.info("Call function adduser.");
         //数据库执行添加命令并且捕获错误
-        addUser(req.session.user).then(result =>
-        {
+        addUser(req.session.user).then(result => {
             Function.info("Add player successfully");
             // 发送邮件
             if (config.Email_config.enable) {
@@ -231,7 +240,7 @@ exports.validation = (req, res)=>
         }).catch(err => Error.error(err));
         //设置状态
         req.session.status = "SUCCESS";
-    }else{
+    } else {
         submit.info(`[${req.protocol}] ` + "User no pass from " + req.ip);
         req.session.status = "FAILURE";
     }
