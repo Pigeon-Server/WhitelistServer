@@ -1,43 +1,160 @@
-// 激活提交按钮
-function onButton() {
-    document.querySelector("#sub").classList.remove("disabled")
-}
 window.onload = function() {
-    let reCAPTCHA_v2_key = null;
-    // 获取reCAPTCHA Key
-    (()=>{
-        axios
-            .get("/api/reCAPTCHA")
-            .then(data=>{
-                reCAPTCHA_v2_key = data.data.reCAPTCHA_v2_key
-                // 更改html
-                document.querySelector(".g-recaptcha").setAttribute("data-sitekey",data.data.reCAPTCHA_v2_key)
-                // 加载js
-                let script = document.createElement('script');
-                script.type = 'text/javaScript';
-                script.src = 'https://recaptcha.net/recaptcha/api.js';
-                document.getElementsByTagName('head')[0].appendChild(script);
-            })
-            .catch(err=>{
-                alert("验证码加载失败")
-                location.reload()
-            })
-    })();
-    //字数计算
-    const input_box = document.querySelector("#user_introduce");
-    const display_box = document.querySelector("#user_introduce_len");
-    input_box.addEventListener("input",()=>{
-        const value_length = input_box.value.replace(/[\r\n]/g,"").replace(/\ +/g,"").length;
-        display_box.innerHTML = value_length;
-        if (value_length >= 30 && value_length <= 300) {
-            display_box.style.color = "green";
-            input_box.classList.remove("is-invalid")
-        } else {
-            display_box.style.color = "red";
-            input_box.classList.add("is-invalid")
+    // VUE
+    const vm = new Vue({
+        el:"#index",
+        data: {
+            form: {
+                Game_name: null,
+                Username: null,
+                Username_mode: null,
+                Age: null,
+                Playtime: null,
+                Online_mode: null,
+                Game_version: null,
+                User_introduce: null,
+                Rules: null,
+                "g-recaptcha-response": null
+            },
+            verify_user_info: {
+                Game_name: false,
+                Username: false
+            },
+            Username_max_length: 12,
+            User_introduce_length: null,
+            submit: false
+        },
+        created(){
+            console.log(
+                "  _____  _                               _____                               \n" +
+                " |  __ \\(_)                             / ____|                              \n" +
+                " | |__) |_   __ _   ___   ___   _ __   | (___    ___  _ __ __   __ ___  _ __ \n" +
+                " |  ___/| | / _` | / _ \\ / _ \\ | '_ \\   \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|\n" +
+                " | |    | || (_| ||  __/| (_) || | | |  ____) ||  __/| |    \\ V /|  __/| |   \n" +
+                " |_|    |_| \\__, | \\___| \\___/ |_| |_| |_____/  \\___||_|     \\_/  \\___||_|   \n" +
+                "             __/ |                                                           \n" +
+                "            |___/                                                            " +
+                "\n\n[Github源码库地址，欢迎贡献&完善&Debug]\n后端：https://github.com/Pigeon-Server/WhitelistServer\n前端（UI）：https://github.com/Pigeon-Server/WhitelistServer-UI"
+            )
+            // 加载验证码
+            this.Get_reCAPTCHA_Key()
+        },
+        methods: {
+            // 获取reCAPTCHA Key
+            Get_reCAPTCHA_Key() {
+                axios
+                    .get("/api/reCAPTCHA")
+                    .then(res=>{
+                        window.grecaptcha.render("g-recaptcha", {
+                            sitekey: res.data.reCAPTCHA_v2_key,
+                            callback: this.return_recaptcha_token
+                        });
+                    })
+                    .catch(err=>{
+                        document.querySelector("#g-recaptcha-Error").style.display = "block"
+                        // alert("验证码加载失败")
+                        // location.reload()
+                    })
+            },
+            // reCAPTCHA 返回
+            return_recaptcha_token(token) {
+                this.form["g-recaptcha-response"] = token
+            },
+            // 个人信息-长度
+            User_introduce() {
+                this.User_introduce_length = this.form.User_introduce.replace(/[\r\n]/g,"").replace(/\ +/g,"").length;
+                this.$refs.User_introduce_length_display.innerHTML = this.User_introduce_length
+                if (this.User_introduce_length >= 30 && this.User_introduce_length <= 300) {
+                    this.$refs.User_introduce_length_display.style.color = "green";
+                    this.$refs.textarea_User_introduce.classList.remove("is-invalid")
+                } else {
+                    this.$refs.User_introduce_length_display.style.color = "red";
+                    this.$refs.textarea_User_introduce.classList.add("is-invalid")
+                }
+            },
+            // 验证必要参数是否被重复使用
+            verify_values(event) {
+                const ID = event.currentTarget.id
+                const dom = document.getElementById(ID)
+                if (this.form[ID]) {
+                    axios({
+                        url: "/api/judge",
+                        params: {
+                            [ID]: this.form[ID],
+                        }
+                    }).then(response =>{
+                        document.querySelector("#Error").style.display = "None"
+                        if (response.data.return == false) {
+                            this.verify_user_info[ID] = true
+                            document.querySelector("#QQ_and_KOOK-form-alert").style.display = "None"
+                            dom.classList.remove("is-invalid");
+                        } else {
+                            this.verify_user_info[ID] = false
+                            dom.classList.add("is-invalid");
+                            document.querySelector("#QQ_and_KOOK-form-alert").style.display = "block"
+                        }
+                    }).catch((error)=>{
+                        this.verify_user_info[ID] = false
+                        document.querySelector("#Error").style.display = "block"
+                        dom.classList.add("is-invalid");
+                        console.error("[尝试校验"+ ID +"时发生严重错误]：\n",error.message)
+                    })
+                }
+            },
+            // 账户类型更换
+            Username_mode_change(event) {
+                if (this.form.Username_mode === "QQ") {
+                    this.$refs.Username.type = "number"
+                    this.Username_max_length = 12
+                } else if (this.form.Username_mode === "KOOK") {
+                    this.$refs.Username.type = "text"
+                    this.Username_max_length = 20
+                }
+            },
+            // Fix 限制输入值长度（QQ/KOOK）
+            Username_max() {
+                this.form.Username=this.form.Username.slice(0,this.Username_max_length)
+            },
+            // 提交表单
+            Submit_form(event) {
+                event.stopPropagation
+                let Status = true
+                let form_data = {}
+                for (verify in this.verify_user_info) {
+                    console.log(verify,this.verify_user_info[verify])
+                    if (!this.verify_user_info[verify]) {
+                        Status = false
+                        document.querySelector("#QQ_and_KOOK-form-alert").style.display = "block"
+                    }
+                }
+                for (item in this.form) {
+                    console.log(item,this.form[item])
+                    form_data[item] = this.form[item]
+                    if (!this.form[item]) {
+                        Status = false
+                        document.querySelector("#form_error").style.display = "block"
+                    }
+                }
+                console.log(form_data)
+                if (Status) {
+                    document.querySelector("#form_error").style.display = "none"
+                    axios({
+                        method: "post",
+                        url: "/api/registration",
+                        params: form_data,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }).then(res=>{
+                        location.replace("/api/registration")
+                    }).catch(err=>{
+                        alert("提交失败\n",err)
+                        document.querySelector("#Error").style.display = "block"
+                    })
+                }
+            }
         }
     });
-    //表单非空验证
+    // 表单非提示
     (() => {
         "use strict";
         const forms = document.querySelectorAll(".needs-validation");
@@ -45,73 +162,9 @@ window.onload = function() {
             form.addEventListener(
                 "submit",
                 (event) => {
-                    if (!form.checkValidity()) {
-                        console.log(event,form)
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add("was-validated");
-                },
+                    form.classList.add("was-validated");},
                 true
             );
         });
-    })();
-    // 验证游戏名和QQ是否被使用过
-    (()=>{
-        let Game_name = document.querySelector("#Game_name");
-        let User = document.querySelector("#Username")
-        let input_list = [Game_name,User]
-        input_list.forEach((obj)=>{
-            obj.classList.add("is-invalid");
-            obj.addEventListener(
-                "blur",
-                (event)=>{
-                    let input_name = obj.name
-                    if (obj.value) {
-                        axios({
-                            url: "/api/judge",
-                            params: {
-                                [input_name]: obj.value,
-                            }
-                        }).then(response =>{
-                            if (response.data.PlayerName == false) {
-                                obj.classList.remove("is-invalid");
-                            } else if (response.data.User == false) {
-                                obj.classList.remove("is-invalid");
-                            } else {
-                                obj.classList.add("is-invalid");
-                                document.querySelector("#QQ_and_KOOK-form-alert").style.display = "block"
-                            }
-                        }).catch((error)=>{
-                            obj.classList.add("is-invalid");
-                            console.log("[严重错误]",error.message)
-                        })
-                    }
-                }
-            )
-        })
-    })();
-    // 阻止表单提交
-    (()=>{
-     let button = document.querySelector("#sub")
-     let input_list = document.querySelectorAll("#Game_name,#Username")
-     button.addEventListener(
-         "click",
-         (obj)=>{
-         let Temp = false
-         input_list.forEach((input_obj)=>{
-             input_obj.classList.forEach((ClassName)=>{
-                 if (ClassName == "is-invalid") {
-                     Temp = true
-                 }
-             })
-         })
-         if (Temp) {
-             obj.preventDefault()
-             document.querySelector("#QQ_and_KOOK-form-alert").style.display = "block"
-         } else {
-             document.querySelector("#QQ_and_KOOK-form-alert").style.display = "None"
-         }
-     })
     })();
 }
