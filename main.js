@@ -32,7 +32,7 @@ app.use(session({
     cookie: {
         maxAge: config.maxage
     },
-    rolling: true
+    rolling: true,
 }));
 
 //注册post参数解析

@@ -6,7 +6,7 @@ const qs = require("qs");
 const config = require(path.join(__dirname, '../config.json'));  //配置读取
 const {GetQuestion,JudgeAnswer} = require('../nodejs/question.js'); //获取问题以及判断正误
 const GetLength = require('../nodejs/getlength.js'); //获取长度
-const {CheckName,addUser,checkToken} = require('../nodejs/mysql.js'); //数据库相关
+const {CheckName,addUser} = require('../nodejs/mysql.js'); //数据库相关
 const {CheckLimit,Reset} = require('../nodejs/limit.js'); //api访问限制
 const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
 const {StrToBool,EnableHSTS} = require('../nodejs/transform.js'); //转换验证
@@ -30,31 +30,23 @@ exports.judge = async (req, res) => {
     //判断api调用是否超过限制次数
     if(CheckLimit(req.ip) !== true)
     {
-        let {account, username} = req.query;
+        let {Username,Game_name} = req.query;
         let exist;
-        if(account && !username)
+        if(Username && !Game_name)
         {
-            await CheckName["User"](account).then(result => {
+            await CheckName["User"](Username).then(result => {
                 Function.info("Call function CheckUser.");
                 exist = {
                     "User": GetLength(result) === 1
                 }
             })
-        }else if(!account && username){
-            await CheckName["PlayerName"](username).then(result => {
+        }else if (!Username && Game_name){
+            await CheckName["PlayerName"](Game_name).then(result => {
                 Function.info("Call function CheckUserName.");
                 exist = {
                     "PlayerName": GetLength(result) === 1
                 }
             })
-        }else{
-            await CheckName["All"](account, username).then(result => {
-                Function.info("Call function CheckALL.");
-                exist = {
-                    "User": GetLength(result) === 1,
-                    "PlayerName": GetLength(result) === 1
-                }
-            });
         }
         res.send(exist);
     }else{
@@ -69,7 +61,7 @@ exports.registration = (req, res) =>
 {
     PostApi.info(`[${req.protocol}] POST request from ${req.ip} ,target /api/registration`);
     EnableHSTS(res);
-    const {username,account,User_Mode,Age,playtime,online_mode,Game_version,user_introduce,Rules} = req.body; //解构赋值
+    const {Game_name,Username,Username_mode,Age,Playtime,Online_mode,Game_version,User_introduce,Rules} = req.body; //解构赋值
     submit.info(`[${req.protocol}] User register from ${req.ip}`);
     Function.info("Call function CheckInfo.");
     if (!req.body["g-recaptcha-response"]) {
@@ -92,14 +84,14 @@ exports.registration = (req, res) =>
                         {
                             //写入session
                             req.session.user = {
-                                PlayerName: username,
-                                UserName: account,
-                                UserMode: User_Mode,
+                                PlayerName: Game_name,
+                                UserName: Username,
+                                UserMode: Username_mode,
                                 Age: Age,
-                                playtime: playtime,
-                                online: StrToBool(online_mode),
+                                playtime: Playtime,
+                                online: StrToBool(Online_mode),
                                 GameVersion: Game_version,
-                                Introduce: user_introduce,
+                                Introduce: User_introduce,
                                 rule: Rules
                             }
                             res.redirect("measurement"); //重定向至答题页面
@@ -202,27 +194,16 @@ exports.validation = (req, res)=>
     //调用判分函数
     let score = JudgeAnswer(req.body,req.session.length);
     req.session.score = score;//分数写入session
-    let token;
     if (score >= config.passScore) //判断是否通过
     {
         submit.info(`[${req.protocol}] User pass from ${req.ip}`);
         //如果session内没有token字段则生成一个token并且写入
         if (!req.session.user.token) {
-            while (true)
-            {
-                Function.info("Call function stringRandom.");
-                token = stringRandom(16, {
-                    letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                    numbers: false
-                })
-                Function.info("Call function checkToken.");
-                checkToken(token).then(result => {
-                    if (result.length < 1){
-                        req.session.user.token = token
-                        break
-                    }
-                }).catch(err => Error.error(err))
-            }
+            Function.info("Call function stringRandom.");
+            req.session.user.token = stringRandom(16, {
+                letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                numbers: false
+            })
         }
         //向session.user字段内添加分数和重试次数
         req.session.user.score = req.session.score;
