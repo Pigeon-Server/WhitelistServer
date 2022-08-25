@@ -36,12 +36,16 @@ exports.judge = async (req, res) => {
         {
             await CheckName["User"](Username).then(result => {
                 Function.info("Call function CheckUser.");
-                exist = GetLength(result) === 1
+                exist = {
+                    "Username": GetLength(result) === 1
+                }
             })
         }else if (!Username && Game_name){
             await CheckName["PlayerName"](Game_name).then(result => {
                 Function.info("Call function CheckUserName.");
-                exist = GetLength(result) === 1
+                exist = {
+                    "Game_name": GetLength(result) === 1
+                }
             })
         }
         res.send(exist);
