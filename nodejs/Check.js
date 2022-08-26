@@ -7,7 +7,7 @@ function CheckInfo(req)
     }
     for (let raw in data)
     {
-        if (data[raw].match(";"))
+        if (data[raw].toString().match(";"))
         {
             return false;
         }
