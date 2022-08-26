@@ -24,23 +24,12 @@ window.onload = function() {
             submit: false
         },
         created(){
-            console.log(
-                "  _____  _                               _____                               \n" +
-                " |  __ \\(_)                             / ____|                              \n" +
-                " | |__) |_   __ _   ___   ___   _ __   | (___    ___  _ __ __   __ ___  _ __ \n" +
-                " |  ___/| | / _` | / _ \\ / _ \\ | '_ \\   \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|\n" +
-                " | |    | || (_| ||  __/| (_) || | | |  ____) ||  __/| |    \\ V /|  __/| |   \n" +
-                " |_|    |_| \\__, | \\___| \\___/ |_| |_| |_____/  \\___||_|     \\_/  \\___||_|   \n" +
-                "             __/ |                                                           \n" +
-                "            |___/                                                            " +
-                "\n\n[Github源码库地址，欢迎贡献&完善&Debug]\n后端：https://github.com/Pigeon-Server/WhitelistServer\n前端（UI）：https://github.com/Pigeon-Server/WhitelistServer-UI"
-            )
             // 加载验证码
-            this.Get_reCAPTCHA_Key()
+            this.load_reCAPTCHA()
         },
         methods: {
-            // 获取reCAPTCHA Key
-            Get_reCAPTCHA_Key() {
+            // 加载验证码
+            load_reCAPTCHA() {
                 axios
                     .get("/api/reCAPTCHA")
                     .then(res=>{
@@ -134,18 +123,19 @@ window.onload = function() {
                         document.querySelector("#form_error").style.display = "block"
                     }
                 }
-                console.log(form_data)
                 if (Status) {
                     document.querySelector("#form_error").style.display = "none"
+                    document.querySelector("#QQ_and_KOOK-form-alert").style.display = "none"
                     axios({
                         method: "post",
                         url: "/api/registration",
-                        params: form_data,
+                        data: form_data,
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
+                            'Content-Type': 'application/json'
                         }
                     }).then(res=>{
-                        location.replace("/api/registration")
+                        console.log(res)
+                        location.replace("/api/measurement")
                     }).catch(err=>{
                         alert("提交失败\n",err)
                         document.querySelector("#Error").style.display = "block"

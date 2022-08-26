@@ -73,6 +73,17 @@ routes(app)
 const port = config.port;
 
 //配置服务器并启动
+console.log(
+    "  _____  _                               _____                               \n" +
+    " |  __ \\(_)                             / ____|                              \n" +
+    " | |__) |_   __ _   ___   ___   _ __   | (___    ___  _ __ __   __ ___  _ __ \n" +
+    " |  ___/| | / _` | / _ \\ / _ \\ | '_ \\   \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|\n" +
+    " | |    | || (_| ||  __/| (_) || | | |  ____) ||  __/| |    \\ V /|  __/| |   \n" +
+    " |_|    |_| \\__, | \\___| \\___/ |_| |_| |_____/  \\___||_|     \\_/  \\___||_|   \n" +
+    "             __/ |                                                           \n" +
+    "            |___/                                                            " +
+    "\n\n[Github源码库地址，欢迎贡献&完善&Debug]\n后端：https://github.com/Pigeon-Server/WhitelistServer\n前端（UI）：https://github.com/Pigeon-Server/WhitelistServer-UI"
+)
 if (config.EnableHTTPS && port !== 80) {
     if (fs.existsSync(path.join(__dirname,"/certificate/certificate.key")) && fs.existsSync(path.join(__dirname,"/certificate/certificate.crt")))
     {
