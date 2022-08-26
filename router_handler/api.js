@@ -94,6 +94,7 @@ exports.registration = (req, res) =>
                                 Introduce: User_introduce,
                                 rule: Rules
                             }
+                            res.send({"return":true});
                         }else{
                             Error.error(`Receive illegal character from ${req.ip}`);
                             req.session.count = 2
