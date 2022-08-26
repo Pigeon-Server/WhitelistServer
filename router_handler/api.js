@@ -94,7 +94,6 @@ exports.registration = (req, res) =>
                                 Introduce: User_introduce,
                                 rule: Rules
                             }
-                            res.redirect("measurement"); //重定向至答题页面
                         }else{
                             Error.error(`Receive illegal character from ${req.ip}`);
                             req.session.count = 2
