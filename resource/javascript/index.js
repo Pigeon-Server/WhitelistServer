@@ -116,7 +116,6 @@ window.onload = function() {
                     }
                 }
                 for (item in this.form) {
-                    console.log(item,this.form[item])
                     form_data[item] = this.form[item]
                     if (!this.form[item]) {
                         Status = false
@@ -134,7 +133,6 @@ window.onload = function() {
                             'Content-Type': 'application/json'
                         }
                     }).then(res=>{
-                        console.log(res)
                         location.replace("/api/measurement")
                     }).catch(err=>{
                         alert("提交失败\n",err)
