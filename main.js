@@ -37,6 +37,7 @@ app.use(session({
 
 //注册post参数解析
 app.use(express.urlencoded({extended:false})); //form表单编码
+app.use(express.json())
 
 // 全局中间件-访问记录
 app.use((req, res, next)=>{
