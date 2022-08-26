@@ -1,8 +1,8 @@
 function CheckInfo(req)
 {
     const data = req.body;
-    const username = data["username"];
-    if (username.match("^\\w+$") === null){
+    const Game_name = data["Game_name"];
+    if (Game_name.match("^\\w+$") === null){
         return false;
     }
     for (let raw in data)
