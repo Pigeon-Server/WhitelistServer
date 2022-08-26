@@ -84,7 +84,7 @@ console.log(
     "            |___/                                                            " +
     "\n\n[Github源码库地址，欢迎贡献&完善&Debug]\n后端：https://github.com/Pigeon-Server/WhitelistServer\n前端（UI）：https://github.com/Pigeon-Server/WhitelistServer-UI"
 )
-if (config.EnableHTTPS && port !== 80) {
+if (config.EnableHTTPS) {
     if (fs.existsSync(path.join(__dirname,"/certificate/certificate.key")) && fs.existsSync(path.join(__dirname,"/certificate/certificate.crt")))
     {
         const https = require('https')
@@ -100,11 +100,18 @@ if (config.EnableHTTPS && port !== 80) {
         }
     }else{
         Error.error("证书文件不存在！");
+        process.exit();
     }
 } else {
     const http = require('http').createServer(app);
     http.listen(port);
-    if (port !== 80) {
+    if (port === 443) {
+        Error.error(`Can't use port 443 in http!`);
+        process.exit();
+    } else if (config.EnableHSTS){
+        Error.error(`If you want to enable HSTS, please enable HTTPS first`);
+        process.exit()
+    } else if (port !== 80){
         logger.info(`Server running at http://0.0.0.0:${port}/`);
     } else {
         logger.info(`Server running at http://0.0.0.0/`);
