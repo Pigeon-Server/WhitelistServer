@@ -28,7 +28,7 @@
   },
   "Email_config": { //邮件发送设置
     "enable": true, //是否启用
-    "Admin_Email": ["Half_nothing@163.com","fsjasd123456@gmail.com"], //将发送给谁
+    "Admin_Email": ["root@163.com","root@gmail.com"], //将发送给谁
     "MAIL_MAILER": "smtp", //邮件协议（当前仅支持smtp）
     "MAIL_HOST": "smtp.email.cn", //邮件服务器地址
     "MAIL_PORT": 404, //邮件服务器端口
