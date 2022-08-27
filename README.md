@@ -8,25 +8,45 @@
  [QQ截图20220802160336](/wiki/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
 更加具体的结果请看[这里](/wiki/myssl.png)
 
-## 配置文件详解
+## 配置文件详解（请勿直接复制，不支持注释）
 
-| 参数名           | 类型         | 作用               |
-| ----------------- |------------|------------------|
-| port | int        | 网页监听的端口          |
-| maxage   | int        | cookie过期时间（ms）   |
-| cookiekey     | string     | 用来加密cookie的随机字符串 |
-| database       | dictionary | 存储数据库连接设置        |
-| database.host  | string     | 数据库地址            |
-| database.username       | string     | 用户名              |
-| database.password        | string     | 密码               |
-| database.name        | string     | 数据库名称            |
-| database.port        | int        | 数据库端口            |
-| LogSize       | string     | 单个日志文件大小         |
-| BackUpNumber        | int        | 保存的日志文件数目        |
-| EnableCompress        | boolean    | 是否启用压缩           |
-| passScore       | int        | 通过的分数            |
-| EnableHTTPS       | boolean    | 是否使用HTTPS        |
-| EnableHSTS       | boolean        | 是否启用HSTS         |
+```json
+{
+  "port": 80, //服务端口
+  "maxage": 1200000, //cookie过期时间（ms）
+  "cookiekey": "ABCDEFG", //用来加密cookie的随机字符串
+  "database": { //数据库连接设置
+    "host": "127.0.0.1", //数据库地址
+    "username": "root", //数据库账户
+    "password": "root", //数据库密码
+    "name": "whitelist", //数据库
+    "port": 3306 //数据库端口
+  },
+  "reCAPTCHA": { //谷歌验证码设置（reCAPTCHA）
+    "Web_token": "", //网站密钥
+    "Server_token": "" //服务端密钥
+  },
+  "Email_config": { //邮件发送设置
+    "enable": true, //是否启用
+    "Admin_Email": ["Half_nothing@163.com","fsjasd123456@gmail.com"], //将发送给谁
+    "MAIL_MAILER": "smtp", //邮件协议（当前仅支持smtp）
+    "MAIL_HOST": "smtp.email.cn", //邮件服务器地址
+    "MAIL_PORT": 404, //邮件服务器端口
+    "MAIL_USERNAME": "root@email.cn", //邮件账户
+    "MAIL_PASSWORD": "root", //邮件密码
+    "MAIL_SSL": true, //是否开启SSL
+    "MAIL_FROM_ADDRESS": "root@email.cn", //发送者
+    "MAIL_FROM_NAME": "Pigeon-Server · 白名单系统" //邮件主题
+  },
+  "LogSize": "10M", //日志单文件最大大小
+  "BackUpNumber": 10, //保存的日志文件数目
+  "EnableCompress": true, //是否启用压缩
+  "passScore": 70, //问卷通过分数
+  "EnableHTTPS": false, //是否启用HTTPS
+  "EnableHSTS": false //是否启用HSTS
+}
+
+```
 
 ## log文件分类
 
@@ -44,8 +64,9 @@
 | ----------------- | -------- | ----------------- |
 | /api/registration | POST     | 无参数            |
 | /api/validation   | POST     | 无参数            |
+| /api/reCAPTCHA    | GET      | 无参数       |
 | /api/question     | GET      | game,server       |
-| /api/judge        | GET      | account，username |
+| /api/judge        | GET      | Username,Game_name |
 | /api/measurement  | GET      | 无参数            |
 | /api/result       | GET      | 无参数            |
 | /api/again        | GET      | 无参数            |
@@ -63,7 +84,12 @@
   * 获取方式 ： POST
   * 接口参数 ： 无参数
   * 说明 ：答题表单提交地址
-  * 返回值 ： 网址重定向至确认页面
+#### **/api/reCAPTCHA**
+  * 地址 ： /api/reCAPTCHA
+  * 获取方式 ： GET
+  * 接口参数 ： 无参数
+  * 说明 ：返回reCAPTCHA网站key
+  * 返回值 ： `{"reCAPTCHA_v2_key":"xxxxxxxxxxx"}`
 #### **/api/question**
   * 地址 ： /api/question
   * 获取方式 ： GET
@@ -83,15 +109,12 @@
   * 地址 ： /api/judge
   * 获取方式 ： GET
   * 接口参数 ： 
-     * 参数 ：account（玩家QQ/KOOK）
-     * 参数 ：username (玩家游戏名)
-     * 补充说明 ：至少传入一个参数，可以两个都传入
+     * 参数 ：Username（玩家QQ/KOOK）
+     * 参数 ：Game_name (玩家游戏名)
+     * 补充说明 ：只能传入一个参数
   * 调用限制 ： 10次/分
   * 说明 ：判断玩家是否已存在
-  * 返回值格式 : 
-     * 只传入account : `{"User": True或者False}`
-     * 只传入username : `{"PlayerName": True或者False}`
-     * 两个参数均传入 ：`{"User": True或者False,"PlayerName": True或者False}`
+  * 返回值格式 : `{"return": True或者False，false代表该玩家不在数据库中}`
 #### **/api/measurement**
   * 地址 ： /api/measurement
   * 获取方式 ： GET
