@@ -33,20 +33,38 @@ window.onload = function() {
                 axios
                     .get("/api/reCAPTCHA")
                     .then(res=>{
-                        window.grecaptcha.render("g-recaptcha", {
-                            sitekey: res.data.reCAPTCHA_v2_key,
-                            callback: this.return_recaptcha_token
-                        });
+                        if (res.data.enable) {
+                            window.grecaptcha.render("g-recaptcha", {
+                                sitekey: res.data.reCAPTCHA_v2_key,
+                                callback: this.return_recaptcha_token,
+                                "expired-callback": this.time_out_recaptcha_token,
+                                "error-callback": this.recaptcha_error
+                            });
+                        } else {
+                            this.form["g-recaptcha-response"] = "false";
+                            console.warn("服务端已禁用reCAPTCHA验证码");
+                        }
                     })
                     .catch(err=>{
+                        document.querySelector("#Error").style.display = "block"
                         document.querySelector("#g-recaptcha-Error").style.display = "block"
-                        // alert("验证码加载失败")
-                        // location.reload()
                     })
             },
             // reCAPTCHA 返回
             return_recaptcha_token(token) {
                 this.form["g-recaptcha-response"] = token
+                document.querySelector("#time_out").style.display = "none"
+                document.querySelector("#g-recaptcha-Error").style.display = "none"
+            },
+            // reCAPTCHA 超时
+            time_out_recaptcha_token () {
+                this.form["g-recaptcha-response"] = null
+                document.querySelector("#time_out").style.display = "block"
+            },
+            // reCAPTCHA 错误
+            recaptcha_error() {
+                this.form["g-recaptcha-response"] = null
+                document.querySelector("#g-recaptcha-Error").style.display = "block"
             },
             // 个人信息-长度
             User_introduce() {
@@ -133,7 +151,12 @@ window.onload = function() {
                             'Content-Type': 'application/json'
                         }
                     }).then(res=>{
-                        location.replace("/api/measurement")
+                        if (res.data.return) {
+                            location.replace("/api/measurement")
+                        } else {
+                            alert("服务器拒绝了提交请求")
+                            document.querySelector("#Error").style.display = "block"
+                        }
                     }).catch(err=>{
                         alert("提交失败\n",err)
                         document.querySelector("#Error").style.display = "block"
@@ -142,7 +165,7 @@ window.onload = function() {
             }
         }
     });
-    // 表单非提示
+    // 空表单提示
     (() => {
         "use strict";
         const forms = document.querySelectorAll(".needs-validation");

@@ -45,16 +45,16 @@
           发生错误
         </div>
         <div class="alert alert-danger" id="g-recaptcha-Error" style="display: none" role="alert">
-          验证码加载失败
+          系统错误:验证码错误
+        </div>
+        <div class="alert alert-danger" id="time_out" style="display: none" role="alert">
+          验证码超时，请重新验证
         </div>
         <div class="alert alert-danger" id="form_error" style="display: none" role="alert">
-          表单填写未完整或有错误
+          表单填写未完整或有误
         </div>
         <div class="alert alert-danger" id="QQ_and_KOOK-form-alert" style="display: none" role="alert">
           请检查游戏名与QQ号/KOOK用户名，可能与他人重复了
-        </div>
-        <div class="alert alert-danger" id="time_out" style="display: none" role="alert">
-          验证码超时，请自行刷新页面
         </div>
         <form method="post" action="./api/registration" class="row g-3 needs-validation" novalidate @submit.prevent="Submit_form">
           <div class="col-md-4">
