@@ -2,8 +2,15 @@ body {
     background-image: unset;
     background-color: #CCCCFF;
 }
-header {
-    display: none;
+.end_time-bar {
+    width: 100%;
+    height: 30px;
+    background-color: rgb(0 255 0 / 50%);;
+    position: fixed;
+    top: 0;
+    right: 0;
+    text-align: center;
+    line-height: 30px;
 }
 .box-header {
     padding: 15px 5px;
@@ -13,7 +20,6 @@ header {
 }
 .box-header h2 {
     font-size: 26px;
-    /*color: #9999CC;*/
 }
 .box-content .col-md-max:nth-child(1) {
     margin-top: 0;

@@ -107,3 +107,5 @@ dist
 config.json
 /log/
 /certificate/
+/resource/lib/disable-devtool/disable-devtool.min.js
+/test.js

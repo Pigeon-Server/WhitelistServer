@@ -61,26 +61,57 @@ window.onload = function () {
         el: "#Test_Box",
         data:{
             // 存储试题
-            get_data: {}
+            get_data: null,
+            end_time: null,
+            Quiz_Time: null
         },
         created(){
-            this.get_Question_data()
+            this.get_Question_data(this)
         },
         methods: {
             // 从接口获取试题
-            get_Question_data(){
+            get_Question_data(that){
                 axios
                     .get("/api/question")
                     .catch(function (error){
                         console.log("[获取试题时发生严重错误]",error.message)
-                        alert("获取试题失败")
+                        alert("[严重错误]获取试题失败")
                         location.reload();
                     })
                     .then(function (data){
-                        vm.get_data = data.data
+                        that.get_data = data.data.Question_data
+                        that.Quiz_Time = data.data.Quiz_Time
+                        that.end_time = Date.now() + that.Quiz_Time
+                        setInterval(()=>{
+                            that.countdown(that)
+                        },100)
                         document.querySelector(".test_questions").style.display = "block"
                         document.getElementsByClassName("loading_cover")[0].style.display = "none";
                     })
+            },
+            countdown(that) {
+                const current_time = Date.now()
+                const time_left = (that.end_time - current_time)
+                let Minute = parseInt(time_left / 1000 / 60 % 60 )
+                let Second = Math.round(time_left / 1000 % 60)
+                // 加0
+                if (Minute < 10) {
+                    Minute = "0" + Minute
+                }
+                if (Second < 10) {
+                    Second = "0" + Second
+                }
+                // 显示并换色
+                if (time_left >= 300000) {
+                    document.querySelector(".end_time").innerHTML = Minute + ":" + Second
+                } else if (time_left >= 0) {
+                    document.querySelector(".end_time-bar").style.background = "rgba(255,0,0,.6)"
+                    document.querySelector(".end_time").innerHTML = Minute + ":" + Second
+                }
+                // 到时间提交
+                if (time_left <= 0) {
+                    document.querySelector("#Test_Box").submit()
+                }
             }
         }
     })
