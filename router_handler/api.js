@@ -18,9 +18,16 @@ let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
 // reCAPTCHA Web_key传输
 exports.reCAPTCHA = (req, res) => {
     EnableHSTS(res);
-    res.send({
-        "reCAPTCHA_v2_key": config.reCAPTCHA.Web_token
-    })
+    if (config.reCAPTCHA.enable) {
+        res.send({
+            "enable": true,
+            "reCAPTCHA_v2_key": config.reCAPTCHA.Web_token
+        })
+    } else {
+        res.send({
+            "enable": false
+        })
+    }
 }
 
 // 判断游戏名/社交账号是否被绑定API(GET)
@@ -61,61 +68,14 @@ exports.registration = (req, res) =>
 {
     PostApi.info(`[${req.protocol}] POST request from ${req.ip} ,target /api/registration`);
     EnableHSTS(res);
-    const {Game_name,Username,Username_mode,Age,Playtime,Online_mode,Game_version,User_introduce,Rules} = req.body; //解构赋值
     submit.info(`[${req.protocol}] User register from ${req.ip}`);
     Function.info("Call function CheckInfo.");
-    if (!req.body["g-recaptcha-response"]) {
-        Error.error("缺少Google reCAPTCHA token");
-        res.render("Error",{
-            ErrorCode: "403 Forbidden",
-            Msg: "缺少Google reCAPTCHA token"
-        });
+    // 判断是否开启谷歌验证码
+    if (config.reCAPTCHA.enable) {
+        //启用谷歌验证码
+        Google_reCAPTCHA(res,req);
     } else {
-        // 验证码解析
-        axios
-            .post("https://recaptcha.net/recaptcha/api/siteverify", qs.stringify({
-                secret: config.reCAPTCHA.Server_token,
-                response: req.body["g-recaptcha-response"],
-            }))
-            .then(
-                data => {
-                    if (data.data.success) {
-                        if (CheckInfo(req))
-                        {
-                            //写入session
-                            req.session.user = {
-                                PlayerName: Game_name,
-                                UserName: Username,
-                                UserMode: Username_mode,
-                                Age: Age,
-                                playtime: Playtime,
-                                online: StrToBool(Online_mode),
-                                GameVersion: Game_version,
-                                Introduce: User_introduce,
-                                rule: Rules
-                            }
-                            res.send({"return":true});
-                        }else{
-                            Error.error(`Receive illegal character from ${req.ip}`);
-                            req.session.count = 2
-                            res.sendFile(path.join(__dirname,"../www/confirm.html"));
-                        }
-                    } else {
-                        Error.error("Google reCAPTCHA验证失败");
-                        res.render("Error",{
-                            ErrorCode: "403 Forbidden",
-                            Msg: "Google reCAPTCHA验证失败"
-                        })
-                    }
-                }
-            )
-            .catch(error => {
-                Error.error(error);
-                res.render("Error",{
-                    ErrorCode: "403 Forbidden",
-                    Msg: "尝试进行Google reCAPTCHA验证时发生错误"
-                })
-            })
+        write_session(res,req);
     }
 }
 
@@ -273,3 +233,66 @@ exports.again = (req, res) =>
     res.redirect("measurement");
 }
 
+// 写入session
+function write_session(res,req) {
+    const {Game_name,Username,Username_mode,Age,Playtime,Online_mode,Game_version,User_introduce,Rules} = req.body; //解构赋值
+    if (CheckInfo(req))
+    {
+        //写入session
+        req.session.user = {
+            PlayerName: Game_name,
+            UserName: Username,
+            UserMode: Username_mode,
+            Age: Age,
+            playtime: Playtime,
+            online: StrToBool(Online_mode),
+            GameVersion: Game_version,
+            Introduce: User_introduce,
+            rule: Rules
+        }
+        res.send({"return":true});
+    }else{
+        Error.error(`Receive illegal character from ${req.ip}`);
+        req.session.count = 2
+        // res.sendFile(path.join(__dirname,"../www/confirm.html"));
+        res.send({"return":false});
+    }
+}
+
+// Google reCAPTCHA
+function Google_reCAPTCHA (res,req) {
+    if (!req.body["g-recaptcha-response"]) {
+        Error.error("缺少Google reCAPTCHA token");
+        res.render("Error",{
+            ErrorCode: "403 Forbidden",
+            Msg: "缺少Google reCAPTCHA token"
+        });
+    } else {
+        // 验证码解析
+        axios
+            .post("https://recaptcha.net/recaptcha/api/siteverify", qs.stringify({
+                secret: config.reCAPTCHA.Server_token,
+                response: req.body["g-recaptcha-response"],
+            }))
+            .then(
+                data => {
+                    if (data.data.success) {
+                        write_session(res,req)
+                    } else {
+                        Error.error("Google reCAPTCHA验证失败");
+                        res.render("Error",{
+                            ErrorCode: "403 Forbidden",
+                            Msg: "Google reCAPTCHA验证失败"
+                        })
+                    }
+                }
+            )
+            .catch(error => {
+                Error.error(error);
+                res.render("Error",{
+                    ErrorCode: "403 Forbidden",
+                    Msg: "尝试进行Google reCAPTCHA验证时发生错误"
+                })
+            })
+    }
+}
