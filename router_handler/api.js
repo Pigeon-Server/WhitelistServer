@@ -174,7 +174,10 @@ exports.question = (req, res)=>
         Error.error(`[${req.protocol}] Forbidden access from ${req.ip}`);
         res.statusCode = 403;
     }
-    res.send(req.session.question);
+    let question = [];
+    question["Quiz_Time"] = config.maxage;
+    question["Question_data"] = req.session.question;
+    res.send(question);
 }
 
 // 答题提交API(POST)
