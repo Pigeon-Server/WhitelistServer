@@ -31,7 +31,7 @@
           {{if status.code == 0}}
             <h1 style="color: green">{{status.msg}}</h1>
           {{else}}
-            <h1>{{status.msg}}</h1>
+            <h1 style="color: red">{{status.msg}}</h1>
           {{/if}}
 
           {{if status.code !=0}}
