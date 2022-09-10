@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link rel="shortcut icon" href="resource/Web-Logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pigeon Server 白名单验证 · 结果页</title>
+  <!-- 基础库导入 -->
+  <link rel="stylesheet" href="resource/lib/bootstrap/bootstrap.css" />
+  <!-- 自定义 -->
+  <script src="resource/javascript/main.js"></script>
+<!--  <script src="./resource/javascript/Confirm-Page.js"></script>-->
+  <link rel="stylesheet" href="resource/styles/main.css" />
+  <link rel="stylesheet" href="resource/styles/Page/Confirm_Page.css" />
+</head>
+<body>
+<header>
+  <nav class="navbar navbar-expand-lg Main-background-color">
+    <div class="Page-container">
+      <div class="container-fluid">
+        <a class="navbar-brand title" href="#">Pigeon Server</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<main>
+  <div class="Page-container">
+    <div class="confirm" id="confirm">
+        <div class="confirm-content">
+          {{if status.code == 0}}
+            <h1 style="color: green">{{status.msg}}</h1>
+          {{else}}
+            <h1>{{status.msg}}</h1>
+          {{/if}}
+
+          {{if status.code !=0}}
+            <!--通过后不显示分数-->
+            <h4>分数：{{score}}</h4>
+          {{/if}}
+          <div class="result">
+              <!--通过-->
+            {{if status.code == 0}}
+              <ul>
+                <li>游戏名：{{userinfo.Game_name}}</li>
+                <li>游戏版本：{{userinfo.Game_version}}</li>
+                <li>社交账户：{{userinfo.user}}</li>
+              </ul>
+              <p>确认您的信息并复制以下代码发送QQ群/KOOK服务器“Pigeon Server”申请白名单</p>
+              <code>
+                !白名单 {{userinfo.token}}
+              </code>
+              <!--未通过-->
+            {{else if status.code == 1}}
+              <a href="/api/again" style="color: red">返回并重新答题</a>
+              <!--错误次数过多-->
+            {{else}}
+              <h4>{{userinfo}}</h4>
+            {{/if}}
+          </div>
+        </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

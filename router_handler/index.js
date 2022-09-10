@@ -18,6 +18,6 @@ exports.error = (req,res)=>
     EnableHSTS(res);
     res.render("Error",{
         ErrorCode: "404 not found",
-        "Msg": "资源不存在"
+        "Msg": "请求的资源不存在"
     });
 }

@@ -32,36 +32,35 @@ exports.reCAPTCHA = (req, res) => {
 
 // 判断游戏名/社交账号是否被绑定API(GET)
 exports.judge = async (req, res) => {
-    // EnableHSTS(res);
-    // GetApi.info(`[${req.protocol}] Get request from ${req.ip} ,target /api/judge`);
-    // //判断api调用是否超过限制次数
-    // if(CheckLimit(req.ip) !== true)
-    // {
-    //     let {Username,Game_name} = req.query;
-    //     let exist;
-    //     if(Username && !Game_name)
-    //     {
-    //         await CheckName["User"](Username).then(result => {
-    //             Function.info("Call function CheckUser.");
-    //             exist = {
-    //                 "return": GetLength(result) === 1
-    //             }
-    //         })
-    //     }else if (!Username && Game_name){
-    //         await CheckName["PlayerName"](Game_name).then(result => {
-    //             Function.info("Call function CheckUserName.");
-    //             exist = {
-    //                 "return": GetLength(result) === 1
-    //             }
-    //         })
-    //     }
-    //     res.send(exist);
-    // }else{
-    //     Error.error(`[${req.protocol}] Too much request from ${req.ip}`);
-    //     res.statusCode = 429;
-    //     res.send("Error!To many requests!Try again later.");
-    // }
-    res.send({"return":false});
+    EnableHSTS(res);
+    GetApi.info(`[${req.protocol}] Get request from ${req.ip} ,target /api/judge`);
+    //判断api调用是否超过限制次数
+    if(CheckLimit(req.ip) !== true)
+    {
+        let {Username,Game_name} = req.query;
+        let exist;
+        if(Username && !Game_name)
+        {
+            await CheckName["User"](Username).then(result => {
+                Function.info("Call function CheckUser.");
+                exist = {
+                    "return": GetLength(result) === 1
+                }
+            })
+        }else if (!Username && Game_name){
+            await CheckName["PlayerName"](Game_name).then(result => {
+                Function.info("Call function CheckUserName.");
+                exist = {
+                    "return": GetLength(result) === 1
+                }
+            })
+        }
+        res.send(exist);
+    }else{
+        Error.error(`[${req.protocol}] Too much request from ${req.ip}`);
+        res.statusCode = 429;
+        res.send("Error!To many requests!Try again later.");
+    }
 }
 
 // 信息表接收API(POST)
