@@ -189,7 +189,8 @@ exports.validation = (req, res)=>
         req.session.status = "FAILURE";
     }
     //跳转至确认界面
-    res.sendFile(path.join(__dirname,"../www/confirm.html"));
+    // res.sendFile(path.join(__dirname,"../www/confirm.html"));
+    res.redirect("/api/result")
 }
 
 // 输出答题结果API(GET)
@@ -199,27 +200,37 @@ exports.result = (req, res) => {
     //如果第二次答题且不通过
     if(req.session.count === 2 && req.session.status !== "SUCCESS")
     {
-        res.send({"status":"REFUSE",
-            "score": 0,
-            "info":"重试超过两次，请半小时后重试"});//不删除session使session自己过期
+        res.render("confirm",{
+            status: {
+                code: 2,
+                msg: "未通过",
+            },
+            userinfo: "重试超过两次，请半小时后重试",
+            score: req.session.score
+        }); //不删除session使session自己过期
     }else if(req.session.status === "SUCCESS"){
-        res.send({
-            "score": req.session.score,
-            "status": req.session.status,
-            "userinfo": {
+        res.render("confirm",{
+            status: {
+                code: 0,
+                msg: "已通过"
+            },
+            userinfo: {
                 Game_name: req.session.user.PlayerName,
-                User: req.session.user.UserName,
-                User_Mode: req.session.user.UserMode,
                 Game_version: req.session.user.GameVersion,
-                token: req.session.user.token
+                user: req.session.user.UserName,
+                token: req.session.user.token,
+                User_Mode: req.session.user.UserMode
             }
         });
         //删除session
         req.session.destroy();
     }else{
-        res.send({
-            "score": req.session.score,
-            "status": req.session.status
+        res.render("confirm",{
+            status: {
+                code: 1,
+                msg: "未通过"
+            },
+            score: req.session.score
         });
     }
 }
@@ -254,7 +265,6 @@ function write_session(res,req) {
     }else{
         Error.error(`Receive illegal character from ${req.ip}`);
         req.session.count = 2
-        // res.sendFile(path.join(__dirname,"../www/confirm.html"));
         res.send({"return":false});
     }
 }

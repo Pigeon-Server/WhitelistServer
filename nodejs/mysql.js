@@ -1,7 +1,8 @@
 const mysql = require('mysql2');
 const path = require("path");
 const config = require(path.join(__dirname,'../config.json'));
-const database = mysql.createPool((
+let database;
+database = mysql.createPool((
     {
         host: config.database.host,
         user: config.database.username,
