@@ -5,8 +5,14 @@ const api_func = require("../router_handler/api");
 
 //api定义
 
-//
-route.get("/reCAPTCHA", api_func.reCAPTCHA)
+// 验证码
+route.get("/reCAPTCHA", api_func.reCAPTCHA);
+
+// BS登陆 = 配置发送
+route.get("/BS_login/config",api_func.BS_OAuth2_Config);
+
+// BS登陆 - Code接收
+route.get("/BS_login/callback",api_func.BS_OAuth2_Code);
 
 // 表单数据存储API
 route.post("/registration", api_func.registration);

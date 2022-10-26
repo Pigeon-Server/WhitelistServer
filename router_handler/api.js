@@ -30,6 +30,76 @@ exports.reCAPTCHA = (req, res) => {
     }
 }
 
+// OAuth2 配置加载
+exports.BS_OAuth2_Config = (req, res) => {
+    EnableHSTS(res);
+    if (config.BS_OAuth2.enable) {
+        res.send({
+            "enable": true,
+            "BS_host": config.BS_OAuth2.BS_Host,
+            "Client_id": config.BS_OAuth2.client_id
+        })
+    } else {
+        res.send({
+            "enable": false
+        })
+    }
+}
+
+// OAuth2 Code接收
+exports.BS_OAuth2_Code = (req, res) => {
+    EnableHSTS(res);
+    const {code} = req.query; // 解析code
+    const show = res
+    if (code) {
+        axios({
+            method: "POST",
+            url: `${config.BS_OAuth2.BS_Host}/oauth/token`,
+            data:{
+                grant_type: "authorization_code",
+                client_id: config.BS_OAuth2.client_id,
+                client_secret: config.BS_OAuth2.client_secret,
+                code: code
+            }
+        }).then(res =>{
+            //写入session
+            if (res.data.access_token&&res.data.refresh_token) {
+                req.session.user = {
+                    BS_OAuth2: res.data
+                }
+                console.debug("验证成功并写入Session")
+            } else {
+                console.error(res.data)
+                console.error("验证错误")
+            }
+            if (res.data.access_token) {
+                axios({
+                    method: "get",
+                    url: "https://skin.pigeon-server.cn/api/user",
+                    headers:{
+                        Authorization: `Bearer ${res.data.access_token}`
+                    }
+                }).then(res => {
+                    if (res.data.verified) {
+                        console.log(res.data.uid)
+                        console.log(res.data.email)
+                        show.send("<script>document.cookie = 'BS-Login_status=true;path=/;expires=';window.close();</script>") // 写入cookie并关闭窗口
+                    } else {
+                        console.error("该账户未通过验证")
+                        show.send("<script>document.cookie = 'BS-Login_status=false;path=/;expires=';window.close();</script>") // 写入cookie并关闭窗口
+                    }
+                }).catch(err=>{
+                    console.error(err)
+                })
+            }
+        }).catch(err => {
+            console.error(err)
+        })
+    } else {
+        console.warn("未收到Code")
+    }
+}
+
 // 判断游戏名/社交账号是否被绑定API(GET)
 exports.judge = async (req, res) => {
     EnableHSTS(res);

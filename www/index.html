@@ -7,11 +7,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pigeon Server 白名单验证</title>
   <!-- 基础库导入 -->
-  <script src="./resource/lib/vue/vue.min.js"></script>
+  <script src="./resource/lib/vue/vue.js"></script>
   <script src="./resource/lib/bootstrap/bootstrap.js"></script>
   <script src="./resource/lib/axios/axios.min.js"></script>
   <script src="./resource/lib/loading-animation/loading-animation.js"></script>
   <script src="https://recaptcha.net/recaptcha/api.js" async></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./resource/lib/bootstrap/bootstrap.css" />
   <link rel="stylesheet" href="./resource/lib/loading-animation/loading-animation.css">
   <!-- 自定义 -->
@@ -37,26 +38,26 @@
     <div class="main-box">
       <!-- 块标题 -->
       <div class="box-header">
-        <h2>白名单申请-基础信息填写</h2>
+        <h2><i class="fa-sharp fa-solid fa-address-card"></i> 白名单申请-基础信息填写</h2>
       </div>
       <!-- 块容器 -->
       <div class="box-content">
         <div class="alert alert-danger" id="Error" style="display: none" role="alert">
-          发生错误
+          <i class="fa-sharp fa-solid fa-circle-exclamation"></i> 发生错误
         </div>
         <div class="alert alert-danger" id="g-recaptcha-Error" style="display: none" role="alert">
-          系统错误:验证码错误
+          <i class="fa-sharp fa-solid fa-circle-exclamation"></i> 系统错误:验证码加载错误
         </div>
         <div class="alert alert-danger" id="time_out" style="display: none" role="alert">
-          验证码超时，请重新验证
+          <i class="fa-sharp fa-solid fa-circle-exclamation"></i> 验证码超时，请重新验证
         </div>
         <div class="alert alert-danger" id="form_error" style="display: none" role="alert">
-          表单填写未完整或有误
+          <i class="fa-sharp fa-solid fa-circle-exclamation"></i> 表单填写未完整或有误
         </div>
         <div class="alert alert-danger" id="QQ_and_KOOK-form-alert" style="display: none" role="alert">
-          请检查游戏名与QQ号/KOOK用户名，可能与他人重复了
+          <i class="fa-sharp fa-solid fa-circle-exclamation"></i> 请检查游戏名与QQ号/KOOK用户名，可能与他人重复了
         </div>
-        <form method="post" action="./api/registration" class="row g-3 needs-validation" novalidate @submit.prevent="Submit_form">
+        <form class="row g-3 needs-validation" novalidate @submit.prevent="Submit_form">
           <div class="col-md-4">
             <label for="Game_name" class="form-label">游戏名</label>
             <input
@@ -66,6 +67,7 @@
                     name="username"
                     minlength="4"
                     maxlength="16"
+                    placeholder="Mojang官方的用户名规则"
                     v-model="form.Game_name"
                     @blur="verify_values($event)"
                     required
@@ -81,7 +83,6 @@
                       name="account"
                       ref="Username"
                       v-model="form.Username"
-                      @input="Username_max"
                       @blur="verify_values($event)"
                       required
               />
@@ -90,10 +91,9 @@
                       id="Username_mode"
                       name="User_Mode"
                       v-model="form.Username_mode"
-                      @change="Username_mode_change"
                       required
               >
-                <option disabled selected value="">请选择</option>
+                <option disabled selected value=null>请选择</option>
                 <option value="QQ">QQ</option>
                 <option value="KOOK">KOOK（开黑啦）</option>
               </select>
@@ -108,7 +108,7 @@
                     v-model="form.Age"
                     required
             >
-              <option disabled selected value="">请选择</option>
+              <option disabled selected value=null>请选择</option>
               <option value="1">16岁及以下</option>
               <option value="2">17~22岁</option>
               <option value="3">22岁以上</option>
@@ -125,29 +125,32 @@
                     v-model="form.Playtime"
                     required
             >
-              <option disabled selected value="">请选择</option>
+              <option disabled selected value=null>请选择</option>
               <option value="1">新入坑（1年以内）</option>
               <option value="2-3">2~3年</option>
               <option value="5+">5年以上</option>
             </select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-4" ref="online_mode">
             <label for="online_mode" class="form-label"
             >是否拥有Minecraft正版账号</label
             >
-            <select
-                    class="form-select"
-                    id="online_mode"
-                    name="online_mode"
-                    v-model="form.Online_mode"
-                    required
-            >
-              <option disabled selected value="">请选择</option>
-              <option value="True">我拥有Minecraft正版账号</option>
-              <option value="False">我没有Minecraft正版账号</option>
-            </select>
+            <div class="input-group has-validation">
+              <select
+                      class="form-select"
+                      id="online_mode"
+                      name="online_mode"
+                      v-model="form.Online_mode"
+                      required
+              >
+                <option disabled selected value=null>请选择</option>
+                <option value="True">我拥有Minecraft正版账号</option>
+                <option value="False">我没有Minecraft正版账号</option>
+              </select>
+              <input type="button" v-if="form.Online_mode == 'False'" @click="open_loginBS_window()" ref="BS_Login_Button" class="btn btn-primary" value="绑定皮肤站账号">
+            </div>
           </div>
-          <div class="col-md-4">
+          <div v-if="form.Online_mode != 'False'" class="col-md-4">
             <label for="Game_version" class="form-label"
             >主要游玩的版本（不可更改）</label
             >
@@ -158,7 +161,7 @@
                     v-model="form.Game_version"
                     required
             >
-              <option disabled selected value="">请选择</option>
+              <option disabled selected value=null>请选择</option>
               <option value="Java">Java版</option>
               <option value="BE">基岩版</option>
             </select>
@@ -176,7 +179,6 @@
                     rows="4"
                     placeholder="请用简短的语言介绍下自己吧~(30-300字)"
                     v-model="form.User_introduce"
-                    @input="User_introduce"
                     ref="textarea_User_introduce"
             ></textarea>
           </div>
@@ -205,7 +207,7 @@
           <div id="g-recaptcha"></div>
           <div class="col-12">
             <button class="btn btn-primary" id="sub">
-              提交并下一步
+              提交并下一步 <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
         </form>
@@ -213,11 +215,11 @@
         <div class="ServerRules">
           <!-- 模态框 -->
           <div class="modal fade" id="myModal">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-lg">
               <div class="modal-content">
                 <!-- 模态框头部 -->
                 <div class="modal-header">
-                  <h4 class="modal-title">服务器规则</h4>
+                  <h4 class="modal-title"><i class="fa-solid fa-circle-info"></i> 服务器规则</h4>
                   <button
                           type="button"
                           class="btn-close"
@@ -276,14 +278,6 @@
                     <li>禁止随意翻动/偷拿他人物品</li>
                     <li>禁止任何破坏他人游戏体验的行为</li>
                     <li>禁止破坏他人建筑或者机器设备</li>
-                  </ol>
-                  <hr />
-                  <h5>4. 测试服规则</h5>
-                  <ol>
-                    <li>禁止在测试服测试类似TNT大炮类东西</li>
-                    <li>禁止放置不受控循环命令方块后不管</li>
-                    <li>禁止将随机刻调到过大</li>
-                    <li>禁止一切可能危害服务器的操作</li>
                   </ol>
                 </div>
               </div>
