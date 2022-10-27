@@ -1,15 +1,15 @@
 const path = require("path");
-const stringRandom = require('string-random'); //随机字符
-const axios = require("axios");
+const stringRandom = require('string-random'); //随机字符,用来生成token
+const axios = require("axios"); //异步请求库
 const qs = require("qs");
 // 自定义库
-const config = require(path.join(__dirname, '../config.json'));  //配置读取
+const config = require('../config.json');  //配置读取
 const {GetQuestion,JudgeAnswer} = require('../nodejs/question.js'); //获取问题以及判断正误
 const GetLength = require('../nodejs/getlength.js'); //获取长度
 const {CheckName,addUser} = require('../nodejs/mysql.js'); //数据库相关
 const {CheckLimit,Reset} = require('../nodejs/limit.js'); //api访问限制
 const {logger,submit,GetApi,PostApi,Error,Function} = require('../nodejs/logger.js'); //日志模块
-const {StrToBool,EnableHSTS} = require('../nodejs/transform.js'); //转换验证
+const {StrToBool} = require('../nodejs/transform.js'); //转换验证
 const {CheckInfo} = require('../nodejs/Check.js');
 const email = require('../nodejs/email');
 //定时任务
@@ -17,7 +17,6 @@ let interval = setInterval(Reset, 60000); //每一分钟清空访问计数器
 
 // reCAPTCHA Web_key传输
 exports.reCAPTCHA = (req, res) => {
-    EnableHSTS(res);
     if (config.reCAPTCHA.enable) {
         res.send({
             "enable": true,
@@ -30,10 +29,73 @@ exports.reCAPTCHA = (req, res) => {
     }
 }
 
+// OAuth2 配置加载
+exports.BS_OAuth2_Config = (req, res) => {
+    if (config.BS_OAuth2.enable) {
+        res.send({
+            "enable": true,
+            "BS_host": config.BS_OAuth2.BS_Host,
+            "Client_id": config.BS_OAuth2.client_id
+        })
+    } else {
+        res.send({
+            "enable": false
+        })
+    }
+}
+
+// OAuth2 Code接收
+exports.BS_OAuth2_Code = (req, res) => {
+    const {code} = req.query; // 解析code
+    if (code) {
+        axios({
+            method: "POST",
+            url: `${config.BS_OAuth2.BS_Host}/oauth/token`,
+            data: {
+                grant_type: "authorization_code",
+                client_id: config.BS_OAuth2.client_id,
+                client_secret: config.BS_OAuth2.client_secret,
+                code: code
+            }
+        }).then(res =>{
+            //写入session
+            if (res.data.access_token && res.data.refresh_token) {
+                req.session.oauth = res.data;
+                logger.info("Oauth2 Verification Succeeded.");
+            } else {
+                Error.error("Oauth2 Verification Failed.");
+                this.res.send("<script>document.cookie = 'BS-Login_status=false;path=/;expires=';window.close();</script>");
+            }
+            if (res.data.access_token) {
+                axios({
+                    method: "get",
+                    url: `${config.BS_OAuth2.BS_Host}/api/user`,
+                    headers:{
+                        Authorization: `Bearer ${res.data.access_token}`
+                    }
+                }).then(res => {
+                    if (res.data.verified) {
+                        this.res.send("<script>document.cookie = 'BS-Login_status=true;path=/;expires=';window.close();</script>"); // 写入cookie并关闭窗口
+                    } else {
+                        Error.error("The user has been banned or does not exist.");
+                        this.res.send("<script>document.cookie = 'BS-Login_status=false;path=/;expires=';window.close();</script>"); // 写入cookie并关闭窗口
+                    }
+                }).catch(err=>{
+                    Error.error(err);
+                })
+            }
+        }).catch(err => {
+            Error.error(err);
+        })
+    } else {
+        Error.warn("The callback address parameter is incorrect.");
+    }
+}
+
 // 判断游戏名/社交账号是否被绑定API(GET)
 exports.judge = async (req, res) => {
-    EnableHSTS(res);
     GetApi.info(`[${req.protocol}] Get request from ${req.ip} ,target /api/judge`);
+    // res.send({"return": false});
     //判断api调用是否超过限制次数
     if(CheckLimit(req.ip) !== true)
     {
@@ -67,7 +129,6 @@ exports.judge = async (req, res) => {
 exports.registration = (req, res) =>
 {
     PostApi.info(`[${req.protocol}] POST request from ${req.ip} ,target /api/registration`);
-    EnableHSTS(res);
     submit.info(`[${req.protocol}] User register from ${req.ip}`);
     Function.info("Call function CheckInfo.");
     // 判断是否开启谷歌验证码
@@ -83,7 +144,6 @@ exports.registration = (req, res) =>
 //问卷页面
 exports.measurement = (req,res)=>
 {
-    EnableHSTS(res);
     if(req.session.user)
     {
         req.session.user.ip = req.ip;
@@ -102,7 +162,6 @@ exports.measurement = (req,res)=>
 exports.question = (req, res)=>
 {
     GetApi.info(`[${req.protocol}] Get request from ${req.ip} ,target /api/question`);
-    EnableHSTS(res);
     //判断答题次数
     switch (req.session.count)
     {
@@ -144,7 +203,6 @@ exports.question = (req, res)=>
 exports.validation = (req, res)=>
 {
     PostApi.info(`[${req.protocol}] POST request from ${req.ip} ,target /api/validation`);
-    EnableHSTS(res);
     submit.info(`[${req.protocol}] Receive answer from ${req.ip}`);
     //判断是否已经判过分
     if(!req.session.count)
@@ -189,48 +247,36 @@ exports.validation = (req, res)=>
         req.session.status = "FAILURE";
     }
     //跳转至确认界面
-    // res.sendFile(path.join(__dirname,"../www/confirm.html"));
-    res.redirect("/api/result")
+    res.sendFile(path.join(__dirname,"../www/confirm.html"));
 }
 
 // 输出答题结果API(GET)
 exports.result = (req, res) => {
     GetApi.info(`[${req.protocol}] Get request from ${req.ip} target /api/result`);
-    EnableHSTS(res);
     //如果第二次答题且不通过
     if(req.session.count === 2 && req.session.status !== "SUCCESS")
     {
-        res.render("confirm",{
-            status: {
-                code: 2,
-                msg: "未通过",
-            },
-            userinfo: "重试超过两次，请半小时后重试",
-            score: req.session.score
-        }); //不删除session使session自己过期
+        res.send({"status":"REFUSE",
+            "score": 0,
+            "info":"重试超过两次，请半小时后重试"});//不删除session使session自己过期
     }else if(req.session.status === "SUCCESS"){
-        res.render("confirm",{
-            status: {
-                code: 0,
-                msg: "已通过"
-            },
-            userinfo: {
+        res.send({
+            "score": req.session.score,
+            "status": req.session.status,
+            "userinfo": {
                 Game_name: req.session.user.PlayerName,
+                User: req.session.user.UserName,
+                User_Mode: req.session.user.UserMode,
                 Game_version: req.session.user.GameVersion,
-                user: req.session.user.UserName,
-                token: req.session.user.token,
-                User_Mode: req.session.user.UserMode
+                token: req.session.user.token
             }
         });
         //删除session
         req.session.destroy();
     }else{
-        res.render("confirm",{
-            status: {
-                code: 1,
-                msg: "未通过"
-            },
-            score: req.session.score
+        res.send({
+            "score": req.session.score,
+            "status": req.session.status
         });
     }
 }
@@ -239,7 +285,6 @@ exports.result = (req, res) => {
 exports.again = (req, res) =>
 {
     GetApi.info(`[${req.protocol}] Get request from ${req.ip},target /api/again`);
-    EnableHSTS(res);
     //重定向至答题界面
     res.redirect("measurement");
 }
@@ -265,6 +310,7 @@ function write_session(res,req) {
     }else{
         Error.error(`Receive illegal character from ${req.ip}`);
         req.session.count = 2
+        // res.sendFile(path.join(__dirname,"../www/confirm.html"));
         res.send({"return":false});
     }
 }

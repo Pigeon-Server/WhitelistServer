@@ -4,10 +4,11 @@ const fs = require('fs'); //文件
 const cookieParser = require('cookie-parser'); //cookie
 const session = require('express-session'); //session
 const express = require('express'); //express
+const expressWs = require('express-ws') // 引入 WebSocket 包
 //自写模块
-const config = require(path.join(__dirname, 'config.json')); //配置读取
-const {EnableHSTS} = require(path.join(__dirname,'nodejs/transform.js')); //转换验证
-const {logger,Error} = require(path.join(__dirname,'nodejs/logger.js')); //日志模块
+const config = require('./config.json'); //配置读取
+const {EnableHSTS} = require('./nodejs/transform.js'); //转换验证
+const {logger,Error} = require('./nodejs/logger.js'); //日志模块
 
 // 初始化express
 const app = express();
@@ -21,6 +22,8 @@ app.engine('art',require('express-art-template'));
 app.set('views',path.join(__dirname,'views'));
 // 3. 告诉express框架模板的默认后缀是什么 ( 方便在渲染模板的时候，省去后缀 )
 app.set('view engine','art');
+
+expressWs(app) // 将 WebSocket 服务混入 app，相当于为 app 添加 .ws 方法
 
 // 配置cookie加密和session
 app.use(cookieParser(config.cookiekey));
@@ -41,6 +44,7 @@ app.use(express.json())
 
 // 全局中间件-访问记录
 app.use((req, res, next)=>{
+    EnableHSTS(res); // 判断是否启用HSTS
     logger.debug(`[${req.protocol}] Client request for ${req.path} from ${req.ip}`);
     next();
 })
@@ -55,7 +59,6 @@ app.use(["/resource","/api/resource"] ,express.static(path.join(__dirname,"/reso
     redirect: true,
     setHeaders (res, path, stat) {
         res.set('x-timestamp', Date.now().toString())
-        EnableHSTS(res);
     }
 }));
 
@@ -68,6 +71,9 @@ app.use((err, req, res, next)=>{
 // 路由拆分测试
 const routes = require("./routes/routes");
 routes(app)
+
+// 注册ws连接
+// app.ws("/ws/BS-Login_status")
 
 // 配置文件解析
 const port = config.port;

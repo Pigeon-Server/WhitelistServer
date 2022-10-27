@@ -5,7 +5,7 @@
 证书文件请放置在certificate文件夹下，并重命名为certificate.key和certificate.crt  
 经[myssl](https://myssl.com/)验证，本网页可以达到A+的SSL/TLS安全标准
 这是已经部署的检测结果
- ![结果](/wiki/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
+ [QQ截图20220802160336](/wiki/182324639-ba589f81-2706-4a6c-a976-0358f0a1b844.png)  
 更加具体的结果请看[这里](/wiki/myssl.png)
 
 ## 配置文件详解（请勿直接复制，不支持注释）

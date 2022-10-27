@@ -1,8 +1,7 @@
 const mysql = require('mysql2');
 const path = require("path");
 const config = require(path.join(__dirname,'../config.json'));
-let database;
-database = mysql.createPool((
+const database = mysql.createPool((
     {
         host: config.database.host,
         user: config.database.username,
@@ -15,7 +14,11 @@ database = mysql.createPool((
 function addUser(userinfo)
 {
     return new Promise((res,rej)=>{
-        database.query('insert into wait (account, PlayerName, UserSource, Age, playtime, onlinemode, GameVersion, Introduce, rules, ip, token, score, number) values (?,?,?,?,?,?,?,?,?,?,?,?,?)',[userinfo.UserName,userinfo.PlayerName,userinfo.UserMode,userinfo.Age,userinfo.playtime,userinfo.online,userinfo.GameVersion,userinfo.Introduce,userinfo.rule,userinfo.ip,userinfo.token,userinfo.score,userinfo.number],(err,result)=>{
+        database.query('insert into wait (account, PlayerName, UserSource, Age, playtime, onlinemode, GameVersion, Introduce, rules, ip, token, score, number) values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    [userinfo.UserName,userinfo.PlayerName,userinfo.UserMode,userinfo.Age,userinfo.playtime,
+                            userinfo.online,userinfo.GameVersion,userinfo.Introduce,userinfo.rule,userinfo.ip,
+                            userinfo.token,userinfo.score,userinfo.number],
+                    (err,result)=>{
             if(!err){
                 res(result);
             }else{

@@ -19,37 +19,98 @@ window.onload = function() {
                 Game_name: false,
                 Username: false
             },
+            BS_Config: {
+                enable: null,
+                URL: null,
+                client_id: null
+            },
             Username_max_length: 12,
             User_introduce_length: null,
             submit: false
         },
+        // 执行时运行
         created(){
             // 加载验证码
-            this.load_reCAPTCHA()
+            axios
+                .get("/api/reCAPTCHA")
+                .then(res=>{
+                    if (res.data.enable) {
+                        // if (false) {
+                        window.grecaptcha.render("g-recaptcha", {
+                            sitekey: res.data.reCAPTCHA_v2_key,
+                            callback: this.return_recaptcha_token,
+                            "expired-callback": this.time_out_recaptcha_token,
+                            "error-callback": this.recaptcha_error
+                        });
+                    } else {
+                        this.form["g-recaptcha-response"] = "false";
+                        console.warn("服务端已禁用reCAPTCHA验证码");
+                    }
+                })
+                .catch(err=>{
+                    console.error("无法连接到验证码API")
+                    document.querySelector("#Error").style.display = "block"
+                    document.querySelector("#g-recaptcha-Error").style.display = "block"
+                })
+            // 加载BS登陆配置
+            axios.get("/api/BS_login/config")
+                .then(res=>{
+                    if (res.data.enable) {
+                        this.BS_Config.enable = true
+                        this.BS_Config.URL = res.data.BS_host
+                        this.BS_Config.client_id = res.data.Client_id
+                    } else {
+                        this.BS_Config.enable = false
+                        console.warn("服务端已禁用BS登陆");
+                    }
+                })
+                .catch(err=>{
+                    console.error("无法加载BS登陆配置")
+                    document.querySelector("#Error").style.display = "block"
+                })
         },
-        methods: {
-            // 加载验证码
-            load_reCAPTCHA() {
-                axios
-                    .get("/api/reCAPTCHA")
-                    .then(res=>{
-                        if (res.data.enable) {
-                            window.grecaptcha.render("g-recaptcha", {
-                                sitekey: res.data.reCAPTCHA_v2_key,
-                                callback: this.return_recaptcha_token,
-                                "expired-callback": this.time_out_recaptcha_token,
-                                "error-callback": this.recaptcha_error
-                            });
-                        } else {
-                            this.form["g-recaptcha-response"] = "false";
-                            console.warn("服务端已禁用reCAPTCHA验证码");
-                        }
-                    })
-                    .catch(err=>{
-                        document.querySelector("#Error").style.display = "block"
-                        document.querySelector("#g-recaptcha-Error").style.display = "block"
-                    })
+        // 监听
+        watch:{
+            // 用户账户模式
+            "form.Username_mode" (newdata) {
+                if (newdata === "QQ") {
+                    this.$refs.Username.type = "number"
+                    this.Username_max_length = 12
+                } else if (newdata === "KOOK") {
+                    this.$refs.Username.type = "text"
+                    this.Username_max_length = 20
+                }
             },
+            // 用户名-输入长度限制
+            "form.Username" (newdata) {
+                this.form.Username=newdata.slice(0,this.Username_max_length)
+            },
+            //个人介绍-长度识别
+            "form.User_introduce" (newdata) {
+                this.User_introduce_length = newdata.match(/\w/g).length;
+                this.$refs.User_introduce_length_display.innerHTML = this.User_introduce_length
+                if (this.User_introduce_length >= 30 && this.User_introduce_length <= 300) {
+                    this.$refs.User_introduce_length_display.style.color = "green";
+                    this.$refs.textarea_User_introduce.classList.remove("is-invalid")
+                } else {
+                    this.$refs.User_introduce_length_display.style.color = "red";
+                    this.$refs.textarea_User_introduce.classList.add("is-invalid")
+                }
+            },
+            // 是否拥有正版
+            "form.Online_mode" (newdata) {
+                if (newdata == "False") {
+                    this.Game_version = "Java"
+                    this.$refs.online_mode.classList.add("col-md-6")
+                    this.form["BS_Login"] = null
+                } else {
+                    this.Game_version = null
+                    this.$refs.online_mode.classList.remove("col-md-6")
+                    delete this.form.BS_Login
+                }
+            }
+        },
+        methods:{
             // reCAPTCHA 返回
             return_recaptcha_token(token) {
                 this.form["g-recaptcha-response"] = token
@@ -66,17 +127,26 @@ window.onload = function() {
                 this.form["g-recaptcha-response"] = null
                 document.querySelector("#g-recaptcha-Error").style.display = "block"
             },
-            // 个人信息-长度
-            User_introduce() {
-                this.User_introduce_length = this.form.User_introduce.replace(/[\r\n]/g,"").replace(/\ +/g,"").length;
-                this.$refs.User_introduce_length_display.innerHTML = this.User_introduce_length
-                if (this.User_introduce_length >= 30 && this.User_introduce_length <= 300) {
-                    this.$refs.User_introduce_length_display.style.color = "green";
-                    this.$refs.textarea_User_introduce.classList.remove("is-invalid")
-                } else {
-                    this.$refs.User_introduce_length_display.style.color = "red";
-                    this.$refs.textarea_User_introduce.classList.add("is-invalid")
-                }
+            // 打开BS登陆窗口
+            open_loginBS_window() {
+                document.cookie = "BS-Login_status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // 如果之前已经存在则清理
+                const url = `${this.BS_Config.URL}/oauth/authorize?client_id=${this.BS_Config.client_id}&response_type=code&scope=`
+                window.open(url,"","menubar = no,status = no,scrollbars = no,menubar = no,location = no") // 打开新窗口
+                const check_BS_Login = setInterval(()=>{ // 检查是否已成功登录BS
+                    const cookie = document.cookie;
+                    if (cookie.includes("BS-Login_status=true")) {
+                        console.debug("BS已登录")
+                        document.cookie = "BS-Login_status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // 清理cookie
+                        this.form.BS_Login = true //写入变量以通过提交检测
+                        this.$refs.BS_Login_Button.style.display = "none" // 关闭登录按钮
+                        this.$refs.online_mode.classList.remove("col-md-6") // 恢复原有大小
+                        clearInterval(check_BS_Login) // 停止轮询
+                    } else if (cookie.includes("BS-Login_status=false")) {
+                        alert("BS登录未成功，请检查是否已验证邮箱")
+                        document.cookie = "BS-Login_status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // 清理cookie
+                        clearInterval(check_BS_Login) // 停止轮询
+                    }
+                },500)
             },
             // 验证必要参数是否被重复使用
             verify_values(event) {
@@ -106,20 +176,6 @@ window.onload = function() {
                         console.error("[尝试校验"+ ID +"时发生严重错误]：\n",error.message)
                     })
                 }
-            },
-            // 账户类型更换
-            Username_mode_change(event) {
-                if (this.form.Username_mode === "QQ") {
-                    this.$refs.Username.type = "number"
-                    this.Username_max_length = 12
-                } else if (this.form.Username_mode === "KOOK") {
-                    this.$refs.Username.type = "text"
-                    this.Username_max_length = 20
-                }
-            },
-            // Fix 限制输入值长度（QQ/KOOK）
-            Username_max() {
-                this.form.Username=this.form.Username.slice(0,this.Username_max_length)
             },
             // 提交表单
             Submit_form(event) {
