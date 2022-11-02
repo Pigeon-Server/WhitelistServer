@@ -23,8 +23,6 @@ app.set('views',path.join(__dirname,'views'));
 // 3. 告诉express框架模板的默认后缀是什么 ( 方便在渲染模板的时候，省去后缀 )
 app.set('view engine','art');
 
-expressWs(app) // 将 WebSocket 服务混入 app，相当于为 app 添加 .ws 方法
-
 // 配置cookie加密和session
 app.use(cookieParser(config.cookiekey));
 app.use(session({
@@ -37,6 +35,12 @@ app.use(session({
     },
     rolling: true,
 }));
+
+// 注册路由
+const api = require("./routes/api");
+const index = require("./routes/index");
+app.use('/api', api);
+app.use('/', index);
 
 //注册post参数解析
 app.use(express.urlencoded({extended:false})); //form表单编码
@@ -68,10 +72,6 @@ app.use((err, req, res, next)=>{
     res.send("ServerError!");
 })
 
-// 路由拆分测试
-const routes = require("./routes/routes");
-routes(app)
-
 // 注册ws连接
 // app.ws("/ws/BS-Login_status")
 
@@ -98,6 +98,7 @@ if (config.EnableHTTPS) {
                 key: fs.readFileSync(path.join(__dirname,"/certificate/certificate.key")),
                 cert: fs.readFileSync(path.join(__dirname,"/certificate/certificate.crt"))
             },app);
+        expressWs(app, https); // 为app添加ws服务，并且使用https
         https.listen(port);
         if (port !== 443) {
             logger.info(`Server running at https://0.0.0.0:${port}/`);
@@ -110,6 +111,7 @@ if (config.EnableHTTPS) {
     }
 } else {
     const http = require('http').createServer(app);
+    expressWs(app, http); // 为app添加ws服务，并且使用http
     http.listen(port);
     if (port === 443) {
         Error.error(`Can't use port 443 in http!`);

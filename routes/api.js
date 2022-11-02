@@ -3,6 +3,10 @@ const route = express.Router();
 
 const api_func = require("../router_handler/api");
 
+// 为子路由添加ws方法
+const expressWS = require('express-ws');
+expressWS(route);
+
 //api定义
 
 // 验证码
