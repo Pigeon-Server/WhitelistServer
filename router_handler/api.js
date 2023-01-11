@@ -101,6 +101,13 @@ exports.judge = async (req, res) => {
     {
         let {Username,Game_name} = req.query;
         let exist;
+        if (Username.toString().toLowerCase().match("and|drop|;|sleep|\'|delete|or|true|false|version|insert|into|select|join|like|union|update|where|\"") ||
+            Game_name.toString().toLowerCase().match("and|drop|;|sleep|\'|delete|or|true|false|version|insert|into|select|join|like|union|update|where|\"")) {
+            email.sendWarningEmail(email.build_warning_email(req, Username + " | " + Game_name))
+            Error.error(`Find Sql Injection from ${req.ip}`);
+            req.session.count = 2
+            res.send({"return":true});
+        }
         if(Username && !Game_name)
         {
             await CheckName["User"](Username).then(result => {
